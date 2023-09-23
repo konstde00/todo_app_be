@@ -90,7 +90,8 @@ commands:
       - aws-cli/setup:
           aws_access_key_id: AWS_ACCESS_KEY_ID
           aws_secret_access_key: AWS_SECRET_ACCESS_KEY
-          aws_region: us-east-1
+          configure_profile_region: true
+          region: us-east-1
 
   prepare_terraform_workspace:
     description: "Sets environment variable for the terraform workspace"
