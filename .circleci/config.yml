@@ -175,10 +175,9 @@ jobs:
             source $BASH_ENV
             cd ./terraform
             cat env/<< parameters.env >>.tfvars > << parameters.env >>.auto.tfvars
-            printf '\nimage_tag = "%s"\n' "$IMAGE_TAG" >> .auto.tfvars
-            printf '\nscalyr_key = "%s"\n' "$SCALYR_API_KEY" >> .auto.tfvars
+            printf '\nimage_tag = "%s"\n' "	vb07a217b-b4e1-4a8e-99ca-aafa7b8f8f92.main.301a4b1" >> .auto.tfvars
             echo "TF_WORKSPACE=${TF_WORKSPACE}"
-            echo "IMAGE_TAG=${IMAGE_TAG}"
+            echo "IMAGE_TAG=vb07a217b-b4e1-4a8e-99ca-aafa7b8f8f92.main.301a4b1"
             terraform plan
 
   tf_apply:
