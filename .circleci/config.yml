@@ -288,7 +288,7 @@ workflows:
             - Staging_Context
       - tf_plan:
           name: staging_tf_plan
-          env: "staging"
+          env: "todo_app_be"
           requires:
             - build_container
           context:
@@ -303,7 +303,7 @@ workflows:
             staging_tf_apply
           requires:
             - apply staging terraform?
-          env: "staging"
+          env: "todo_app_be"
           context:
             - Staging_Context
       - apply_gateway_staging_changes:
