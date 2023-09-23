@@ -51,7 +51,7 @@ commands:
     steps:
       - *restore_dependencies
       - run: gradle dependencies
-      - run: gradle build -x test
+#      - run: gradle build -x test
       - save_cache:
           name: Saving gradle dependencies cache
           key: *gradle_cache_key
