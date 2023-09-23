@@ -1,3 +1,8 @@
+provider "aws" {
+  region = "us-east-1"
+  profile = "tf_execution_profile"
+}
+
 terraform {
   backend "remote" {
     hostname     = "app.terraform.io"
@@ -12,9 +17,4 @@ terraform {
       version = "~> 3.68"
     }
   }
-}
-
-provider "aws" {
-  region = "us-east-1"
-  profile = "tf_execution_profile"
 }
