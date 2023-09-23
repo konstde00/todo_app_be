@@ -1,0 +1,60 @@
+[
+  {
+    "image": "533243300146.dkr.ecr.us-west-2.amazonaws.com/newrelic/logging-firelens-fluentbit",
+    "name": "log_router",
+    "memory": 100,
+    "cpu": 0,
+    "environment": [],
+    "mountPoints": [],
+    "portMappings": [],
+    "user": "0",
+    "volumesFrom": [],
+    "essential": true,
+    "firelensConfiguration": {
+        "type": "fluentbit",
+        "options": {
+            "enable-ecs-log-metadata": "true"
+        }
+    },
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+         "awslogs-group":"${log_group}",
+         "awslogs-region": "us-west-2",
+         "awslogs-stream-prefix": "awslogs-ecs-fargate"
+      }
+    }
+  },
+  {
+    "name": "${container_name}",
+    "image": "${repo_url}:${image_tag}",
+
+    "memory": ${memory},
+    "cpu": ${cpu},
+
+    "essential": true,
+    "secrets": ${secrets},
+    "environment": ${environment_variables},
+    
+    "logConfiguration": {
+         "logDriver":"awsfirelens",
+         "options": {
+            "Name": "newrelic"
+         },
+         "secretOptions": [{
+            "name": "apiKey",
+            "valueFrom": "${new_relic_key}"
+         }]
+    },
+  
+    "portMappings": [
+      {
+        "protocol": "tcp",
+        "containerPort": ${container_port},
+        "hostPort": ${container_port}
+      }
+    ],
+    "mountPoints": [],
+    "volumesFrom": []
+  }
+]

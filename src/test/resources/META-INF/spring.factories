@@ -1,0 +1,3 @@
+org.springframework.test.context.ContextCustomizerFactory = com.konstde00.\
+    todo_app.config.SqlTestContainersSpringContextCustomizerFactory,com.\
+    konstde00.todo_app.config.RedisTestContainersSpringContextCustomizerFactory

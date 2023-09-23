@@ -1,0 +1,57 @@
+/*
+ * Plugin that provides API-first development using OpenAPI-generator to
+ * generate Spring-MVC endpoint stubs at compile time from an OpenAPI definition file
+ */
+apply plugin: "org.openapi.generator"
+
+// fixes problem of root project not seeing classes from this module sometimes
+jar.enabled = true
+bootJar.enabled = false
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.14'
+    testImplementation 'io.swagger.parser.v3:swagger-parser:2.1.6' // same version as in openapi-generator https://github.com/OpenAPITools/openapi-generator/blob/7f8b853f502d9039c9a0aac2614ce92871e895ed/pom.xml#L1504C33-L1504C38
+    testImplementation "one.util:streamex:0.7.3"
+}
+
+def generatorOutput  = "${buildDir}/generated/sources/swagger/"
+
+def codegenAdditionalProperties = [
+        dateLibrary: "java8",
+        interfaceOnly: true,
+        openApiNullable: false,
+        unhandledException: true,
+        useBeanValidation: true,
+        useLombok: true,
+        useOptional: false,
+        useTags: true,
+        additionalEnumTypeAnnotations: "@ModelEnum",
+]
+
+sourceSets {
+    main.java.srcDirs += "${generatorOutput}/src/main/java"
+}
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$rootDir/src/main/resources/swagger/api.yml"
+    outputDir = "$buildDir/openapi"
+    apiPackage = "com.konstde00.todo_app.web.api"
+    modelPackage = "com.konstde00.todo_app.service.api.dto"
+    configOptions = [
+            library : "spring-boot",
+    ]
+
+    additionalProperties = codegenAdditionalProperties
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir file("${project.buildDir.path}/openapi/src/main/java")
+        }
+    }
+}
+
+compileJava.dependsOn("openApiGenerate")

@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "action": {
+        "type": "expire"
+      },
+      "selection": {
+        "countType": "imageCountMoreThan",
+        "countNumber": ${image_limit},
+        "tagStatus": "tagged",
+        "tagPrefixList": ["v"]
+      },
+      "description": "Keep ${image_limit} images",
+      "rulePriority": 10
+    }
+  ]
+}

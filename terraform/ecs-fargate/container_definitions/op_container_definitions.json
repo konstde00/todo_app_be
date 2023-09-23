@@ -1,0 +1,61 @@
+[
+  {
+    "name": "${container_name}",
+    "image": "${repo_url}:${image_tag}",
+
+    "memory": ${memory},
+    "cpu": ${cpu},
+
+    "essential": true,
+
+    "portMappings": [
+      {
+        "protocol": "tcp",
+        "containerPort": ${container_port},
+        "hostPort": ${container_port}
+      }
+    ],
+
+    "environment": [
+      {
+        "name": "CONSUL_IP",
+        "value": "${consul_ip}"
+      },
+      {
+        "name": "NEW_RELIC_LICENSE_KEY",
+        "value": "${new_relic_key}"
+      },
+      {
+        "name": "NEW_RELIC_APP_NAME",
+        "value": "${container_name}"
+      },
+      {
+        "name": "JAVA_OPTS",
+        "value": "-Xmx${memory}m -Xms${memory}m -javaagent:/newrelic.jar"
+      },
+      {
+        "name": "ENVIRONMENT",
+        "value": "${environment}"
+      },
+      {
+        "name": "SCALYR_API_KEY",
+        "value": "${scalyr_key}"
+      },
+      {
+        "name": "NODE_OPTS",
+        "value": "${node_opts}"
+      }
+    ],
+
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "mountPoints": [],
+    "volumesFrom": []
+  }
+]
