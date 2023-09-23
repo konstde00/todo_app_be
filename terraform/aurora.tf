@@ -6,6 +6,13 @@ resource "aws_rds_cluster" "todo_app_be" {
   database_name      = "test"
   master_username    = "test"
   master_password    = "must_be_eight_characters"
+
+    scaling_configuration {
+        auto_pause               = true
+        max_capacity             = 2
+        min_capacity             = 1
+        seconds_until_auto_pause = 300
+    }
 }
 
 resource "aws_rds_cluster_instance" "todo_app_be" {
