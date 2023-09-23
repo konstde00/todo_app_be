@@ -59,7 +59,3 @@ output "external_target_group_port" {
 output "internal_route53_record_name" {
   value = aws_route53_record.int_dns.name
 }
-
-output "aws_api_gateway_vpc_link_id" {
-  value = aws_api_gateway_vpc_link.api-service-vpclink.id
-}
