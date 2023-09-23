@@ -35,7 +35,3 @@ data "terraform_remote_state" "shared_secrets" {
     }
   }
 }
-
-data "aws_route53_zone" "internal-zone" {
-  zone_id = data.terraform_remote_state.shared_network.outputs.dns_zone_id
-}

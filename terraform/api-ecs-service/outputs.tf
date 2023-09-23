@@ -55,7 +55,3 @@ output "external_target_group_id" {
 output "external_target_group_port" {
   value = var.provide_external_lb ? aws_lb_target_group.ext_target_group["default"].port : ""
 }
-
-output "internal_route53_record_name" {
-  value = aws_route53_record.int_dns.name
-}
