@@ -1,19 +1,6 @@
 locals {
-  default_secrets = [
-    {
-      name      = "NEW_RELIC_LICENSE_KEY"
-      valueFrom = data.terraform_remote_state.shared_secrets.outputs.new_relic_secret_path
-    },
-    {
-      name      = "SCALYR_API_KEY"
-      valueFrom = data.terraform_remote_state.shared_secrets.outputs.scalyr_secret_path
-    }
-  ]
 
-  default_secrets_map = { for s in local.default_secrets : s.name => s }
   var_secrets_map     = { for s in var.secrets : s.name => s }
-
-  merged_secrets = toset(values(merge(local.default_secrets_map, local.var_secrets_map)))
 
   java_heap_mb = coalesce(var.java_heap_mb, 0.9 * var.memory)
 
@@ -29,10 +16,6 @@ locals {
     {
       name  = "ENVIRONMENT"
       value = title(var.environment_name)
-    },
-    {
-      name  = "NODE_OPTS"
-      value = var.node_opts
     }
   ]
 
@@ -49,13 +32,9 @@ locals {
   )
 }
 
-// ================================================
-// Service
-// ================================================
-
 resource "aws_ecs_service" "ecs_service" {
   name            = "${var.environment_name}-${var.service_name}"
-  cluster         = data.terraform_remote_state.shared_ecs.outputs.ecs_cluster_arn
+  cluster         = var.cluster_id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = var.desired_count
 
@@ -82,8 +61,8 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   network_configuration {
-    subnets         = data.terraform_remote_state.shared_network.outputs.vpc_internal_subnet_ids
-    security_groups = var.security_groups_override != null ? var.security_groups_override : [data.terraform_remote_state.shared_network.outputs.vpc_internal_only_security_group_id]
+    subnets         = concat(var.vpc_internal_subnet_ids, var.vpc_external_subnet_ids)
+    security_groups =  var.security_groups_override
   }
 
   deployment_circuit_breaker {
@@ -107,15 +86,11 @@ resource "aws_ecs_service" "ecs_service" {
   wait_for_steady_state = var.wait_for_steady_state
 }
 
-// ================================================
-// Task
-// ================================================
-
 resource "aws_ecs_task_definition" "task_definition" {
   family                   = "${var.environment_name}-${var.service_name}-task"
   container_definitions    = data.template_file.container_definition.rendered
   task_role_arn            = var.task_role_arn != null ? var.task_role_arn : ""
-  execution_role_arn       = coalesce(var.execution_role_override, data.terraform_remote_state.shared_ecs.outputs.ecs_task_executor_arn)
+  execution_role_arn       = var.execution_role_override
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   memory                   = var.memory
@@ -123,30 +98,19 @@ resource "aws_ecs_task_definition" "task_definition" {
   tags                     = local.ecr_service_tags
 }
 
-// ================================================
-// Logs
-// ================================================
 resource "aws_cloudwatch_log_group" "log_group" {
   name = "/ecs/${var.environment_name}-${var.service_name}"
-  // retention set to 1 day because all logs should go to scalyr
+
   retention_in_days = 1
 
   tags = local.ecr_service_tags
-}
-
-data "aws_secretsmanager_secret" "scalyr_key" {
-  arn = data.terraform_remote_state.shared_secrets.outputs.scalyr_secret_arn
-}
-
-data "aws_secretsmanager_secret_version" "current" {
-  secret_id = data.aws_secretsmanager_secret.scalyr_key.id
 }
 
 data "template_file" "container_definition" {
   template = file("${path.module}/container-definition.jsontmpl")
 
   vars = {
-    repo_url = var.ecr_repository_url != null ? var.ecr_repository_url : data.terraform_remote_state.shared_ecr.outputs.ecr_repo_urls[var.service_name]
+    repo_url = var.ecr_repository_url
 
     image_tag      = var.image_tag
     container_name = var.service_name
@@ -156,10 +120,8 @@ data "template_file" "container_definition" {
     container_port = var.container_port
 
     environment_variables = jsonencode(local.merged_environment_variables)
-    secrets               = jsonencode(local.merged_secrets)
+    secrets               = jsonencode(local.var_secrets_map)
 
     log_group = aws_cloudwatch_log_group.log_group.name
-
-    new_relic_key = data.terraform_remote_state.shared_secrets.outputs.new_relic_secret_path
   }
 }

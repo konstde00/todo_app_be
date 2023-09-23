@@ -85,9 +85,7 @@ data "template_file" "container_definition" {
     memory = var.memory
     cpu    = var.cpu
 
-    new_relic_key  = var.new_relic_key
     environment    = var.environment_name
-    scalyr_key     = var.scalyr_key
     container_port = var.container_port
 
     node_opts = var.node_opts

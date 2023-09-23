@@ -206,7 +206,6 @@ jobs:
             cd ./terraform
             cat env/<< parameters.env >>.tfvars > << parameters.env >>.auto.tfvars
             printf '\nimage_tag = "%s"\n' "$IMAGE_TAG" >> .auto.tfvars
-            printf '\nscalyr_key = "%s"\n' "$SCALYR_API_KEY" >> .auto.tfvars
             echo "TF_WORKSPACE=${TF_WORKSPACE}"
             echo "IMAGE_TAG=${IMAGE_TAG}"
             terraform apply -auto-approve

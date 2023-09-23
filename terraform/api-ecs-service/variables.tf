@@ -2,6 +2,10 @@ variable "environment_name" {
   description = "(Required) Either 'staging' or 'production', depending on which environment you want to import"
 }
 
+variable "cluster_id" {
+  description = "(Required) The id of ECS cluster"
+}
+
 variable "desired_count" {
   description = "(Required) The number of containers to run"
 }
@@ -39,6 +43,21 @@ variable "image_tag" {
 variable "tags" {
   description = "(Required) Budget monitoring tags"
   type        = map(string)
+}
+
+variable "vpc_id" {
+  description = "(Required) Port that container exposes"
+  type        = string
+}
+
+variable "vpc_internal_subnet_ids" {
+    description = "(Required) List of internal subnet ids"
+    type        = list(string)
+}
+
+variable "vpc_external_subnet_ids" {
+  description = "(Required) List of external subnet ids"
+  type        = list(string)
 }
 
 variable "container_port" {
@@ -135,9 +154,8 @@ variable "ext_load_balancer_tg_name" {
 }
 
 variable "ecr_repository_url" {
-  description = "(Optional) ecr repository url for the ecs service. Will grab one from ../../ecr/outputs.tf if not provided."
+  description = "(Required) ecr repository url for the ecs service. Will grab one from ../../ecr/outputs.tf if not provided."
   type        = string
-  default     = null
 }
 
 variable "secrets" {

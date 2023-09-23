@@ -22,28 +22,12 @@
         "value": "${consul_ip}"
       },
       {
-        "name": "NEW_RELIC_LICENSE_KEY",
-        "value": "${new_relic_key}"
-      },
-      {
-        "name": "NEW_RELIC_APP_NAME",
-        "value": "${container_name}"
-      },
-      {
         "name": "JAVA_OPTS",
         "value": "-Xmx${memory}m -Xms${memory}m -javaagent:/newrelic.jar"
       },
       {
         "name": "ENVIRONMENT",
         "value": "${environment}"
-      },
-      {
-        "name": "SCALYR_API_KEY",
-        "value": "${scalyr_key}"
-      },
-      {
-        "name": "NODE_OPTS",
-        "value": "${node_opts}"
       }
     ],
 

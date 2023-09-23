@@ -2,7 +2,7 @@ resource "random_integer" "load_balancer_ext_random_id_suffix" {
   max = 1000
   min = 1
   keepers = {
-    subnets = join(",", data.terraform_remote_state.shared_network.outputs.vpc_external_subnet_ids)
+    subnets = join(",", var.vpc_external_subnet_ids)
     name    = coalesce(var.ext_load_balancer_name, "${var.environment_name}-${substr(var.service_name, 0, 15)}")
   }
 }
@@ -25,7 +25,7 @@ resource "aws_lb" "ext_load_balancer" {
   load_balancer_type = "application"
   security_groups    = var.external_lb_security_group_ids
   subnets = (length(var.external_lb_subnet_ids) == 0
-    ? data.terraform_remote_state.shared_network.outputs.vpc_external_subnet_ids
+    ? var.vpc_external_subnet_ids
     : var.external_lb_subnet_ids
   )
 
@@ -42,7 +42,7 @@ resource "aws_lb_target_group" "ext_target_group" {
   name        = local.ext_target_group_name
   port        = var.container_port
   protocol    = "HTTP"
-  vpc_id      = data.terraform_remote_state.shared_network.outputs.vpc_primary_vpc_id
+  vpc_id      = var.vpc_id
   target_type = "ip"
   tags        = local.ecr_service_tags
 

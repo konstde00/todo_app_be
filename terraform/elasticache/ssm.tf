@@ -14,5 +14,5 @@ resource "aws_ssm_parameter" "elasticache_cluster_id" {
 resource "aws_ssm_parameter" "op_app_cache_cluster_security_group_id" {
   name  = "/op-app/${var.environment_name}/shared/op-app-cache-security-group/id"
   type  = "String"
-  value = aws_security_group.op_app_cache_cluster_security_group.id
+  value = aws_security_group.cache_cluster_security_group.id
 }

@@ -6,7 +6,6 @@ resource "aws_rds_cluster" "todo_app_be" {
   database_name      = "test"
   master_username    = "test"
   master_password    = "must_be_eight_characters"
-
 }
 
 resource "aws_rds_cluster_instance" "todo_app_be" {
