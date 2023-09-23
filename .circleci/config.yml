@@ -104,7 +104,7 @@ commands:
           create-repo: false
           no-output-timeout: 20m
           repo: todo_app_be
-          region: AWS_DEFAULT_REGION
+          region: us-east-1
           skip-when-tags-exist: true
           tag: ${IMAGE_TAG}
 
