@@ -169,8 +169,6 @@ jobs:
             pwd
             cd ./terraform
             pwd
-            ls
-#            echo "TF_WORKSPACE=$TF_WORKSPACE"
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
           name: Terraform Plan
@@ -200,7 +198,6 @@ jobs:
           command: |
             source $BASH_ENV
             cd ./terraform
-#            echo "TF_WORKSPACE=$TF_WORKSPACE"
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
           name: Terraform Apply
