@@ -29,9 +29,9 @@ data "terraform_remote_state" "shared_network" {
 data "terraform_remote_state" "shared_secrets" {
   backend = "remote"
   config = {
-    organization = "ObservePoint"
+    organization = "konstde00"
     workspaces = {
-      name = "shared_infrastructure_secrets_${var.environment_name}"
+      name = "todo_app_be"
     }
   }
 }
