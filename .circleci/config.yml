@@ -83,6 +83,14 @@ commands:
             echo "export IMAGE_TAG=$IMAGE_TAG" >> ~/.bash_profile
             echo $IMAGE_TAG > ~/image-tag
             echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV
+  configure_aws_profile:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws_access_key_id: AWS_ACCESS_KEY_ID
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY
+          aws_region: us-east-1
   prepare_terraform_workspace:
     description: "Sets environment variable for the terraform workspace"
     parameters:
@@ -150,15 +158,6 @@ jobs:
           version: 19.03.13
       - build_and_push_image_to_ecr
 
-  configure-aws-profile:
-    executor: aws-cli/default
-    steps:
-      - checkout
-      - aws-cli/setup:
-          aws_access_key_id: AWS_ACCESS_KEY_ID
-          aws_secret_access_key: AWS_SECRET_ACCESS_KEY
-          aws_region: us-east-1
-
   tf_plan:
     resource_class: small
     parameters:
@@ -169,7 +168,7 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
-      - configure-aws-profile
+      - configure_aws_profile
       - run:
           name: Terraform Init
           command: |
