@@ -129,7 +129,7 @@ jobs:
 
   build_container:
     docker:
-      - image: circleci/openjdk:17.0.8
+      - image: circleci/openjdk:17
     steps:
       - checkout_code
       - clean_build
