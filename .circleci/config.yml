@@ -161,8 +161,8 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
-      - prepare_terraform_workspace:
-          env: <<parameters.env>>
+#      - prepare_terraform_workspace:
+#          env: <<parameters.env>>
       - run:
           name: Terraform Init
           command: |
@@ -193,8 +193,8 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
-      - prepare_terraform_workspace:
-          env: <<parameters.env>>
+#      - prepare_terraform_workspace:
+#          env: <<parameters.env>>
       - run:
           name: Terraform Init
           command: |

@@ -3,7 +3,7 @@ terraform {
     hostname     = "app.terraform.io"
     organization = "konstde00"
     workspaces {
-      prefix = "todo_app_be"
+      name = "todo_app_be"
     }
   }
   required_providers {
