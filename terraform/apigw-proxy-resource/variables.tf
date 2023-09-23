@@ -22,10 +22,10 @@ variable "proxy_uri" {
 
 variable "method_request_parameters" {
   description = "(Optional) A map of request parameters (from the path, query string and headers) that should be passed to the integration."
-  default = {}
+  default     = {}
 }
 
 variable "integration_request_parameters" {
   description = "(Optional) A list of cache key parameters for the integration"
-  default = {}
+  default     = {}
 }

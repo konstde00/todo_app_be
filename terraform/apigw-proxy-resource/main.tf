@@ -3,17 +3,17 @@ module "global_variables" {
 }
 
 resource "aws_api_gateway_resource" "api_resource" {
-  parent_id = var.parent_resource_id
-  path_part = var.path_part
+  parent_id   = var.parent_resource_id
+  path_part   = var.path_part
   rest_api_id = var.rest_api_id
 }
 
 resource "aws_api_gateway_method" "api_resource_any" {
-  rest_api_id = var.rest_api_id
-  resource_id = aws_api_gateway_resource.api_resource.id
-  http_method = "ANY"
-  authorization = "CUSTOM"
-  authorizer_id = var.apigw_authorizer_id
+  rest_api_id        = var.rest_api_id
+  resource_id        = aws_api_gateway_resource.api_resource.id
+  http_method        = "ANY"
+  authorization      = "CUSTOM"
+  authorizer_id      = var.apigw_authorizer_id
   request_parameters = var.method_request_parameters
 }
 
@@ -27,9 +27,9 @@ resource "aws_api_gateway_integration" "api_resource_any_integration" {
   passthrough_behavior = "WHEN_NO_MATCH"
 
   type = "HTTP_PROXY"
-  uri = var.proxy_uri
+  uri  = var.proxy_uri
 
-  connection_id = var.vpc_link_id
+  connection_id   = var.vpc_link_id
   connection_type = "VPC_LINK"
 
   request_parameters = merge(var.integration_request_parameters, {
@@ -38,9 +38,9 @@ resource "aws_api_gateway_integration" "api_resource_any_integration" {
 }
 
 resource "aws_api_gateway_method" "api_resource_options" {
-  rest_api_id = var.rest_api_id
-  resource_id = aws_api_gateway_resource.api_resource.id
-  http_method = "OPTIONS"
+  rest_api_id   = var.rest_api_id
+  resource_id   = aws_api_gateway_resource.api_resource.id
+  http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
@@ -72,12 +72,12 @@ resource "aws_api_gateway_method_response" "api_resource_options_response_200" {
 }
 
 resource "aws_api_gateway_integration_response" "api_resource_options_response_200_integration" {
-  rest_api_id = var.rest_api_id
-  resource_id = aws_api_gateway_resource.api_resource.id
-  http_method = aws_api_gateway_method.api_resource_options.http_method
-  status_code = aws_api_gateway_method_response.api_resource_options_response_200.status_code
+  rest_api_id         = var.rest_api_id
+  resource_id         = aws_api_gateway_resource.api_resource.id
+  http_method         = aws_api_gateway_method.api_resource_options.http_method
+  status_code         = aws_api_gateway_method_response.api_resource_options_response_200.status_code
   response_parameters = module.global_variables.apigw_options_integration_response_parameters
-  response_templates  = {
+  response_templates = {
     "application/json" = ""
   }
 

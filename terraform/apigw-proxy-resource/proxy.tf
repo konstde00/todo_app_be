@@ -3,16 +3,16 @@
 
 resource "aws_api_gateway_resource" "api_resource_proxy" {
   rest_api_id = var.rest_api_id
-  parent_id = aws_api_gateway_resource.api_resource.id
-  path_part = "{proxy+}"
+  parent_id   = aws_api_gateway_resource.api_resource.id
+  path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "api_resource_proxy_any" {
-  rest_api_id = var.rest_api_id
-  resource_id = aws_api_gateway_resource.api_resource_proxy.id
-  http_method        = "ANY"
-  authorization      = "CUSTOM"
-  authorizer_id      = var.apigw_authorizer_id
+  rest_api_id   = var.rest_api_id
+  resource_id   = aws_api_gateway_resource.api_resource_proxy.id
+  http_method   = "ANY"
+  authorization = "CUSTOM"
+  authorizer_id = var.apigw_authorizer_id
   request_parameters = merge(var.method_request_parameters, {
     "method.request.path.proxy" = true
   })
@@ -28,7 +28,7 @@ resource "aws_api_gateway_integration" "api_resource_proxy_any_integration" {
   passthrough_behavior = "WHEN_NO_MATCH"
 
   type = "HTTP_PROXY"
-  uri = "${var.proxy_uri}/{proxy}"
+  uri  = "${var.proxy_uri}/{proxy}"
 
   connection_id   = var.vpc_link_id
   connection_type = "VPC_LINK"
@@ -44,8 +44,8 @@ resource "aws_api_gateway_integration" "api_resource_proxy_any_integration" {
 }
 
 resource "aws_api_gateway_method" "api_resource_proxy_options" {
-  rest_api_id = var.rest_api_id
-  resource_id = aws_api_gateway_resource.api_resource_proxy.id
+  rest_api_id   = var.rest_api_id
+  resource_id   = aws_api_gateway_resource.api_resource_proxy.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
@@ -70,7 +70,7 @@ resource "aws_api_gateway_method_response" "api_resource_proxy_options_response_
   rest_api_id = var.rest_api_id
   resource_id = aws_api_gateway_resource.api_resource_proxy.id
   http_method = aws_api_gateway_method.api_resource_proxy_options.http_method
-  status_code     = "200"
+  status_code = "200"
   response_models = {
     "application/json" = "Empty"
   }
@@ -84,7 +84,7 @@ resource "aws_api_gateway_integration_response" "api_resource_proxy_options_resp
   http_method         = aws_api_gateway_method.api_resource_proxy_options.http_method
   status_code         = aws_api_gateway_method_response.api_resource_options_response_200.status_code
   response_parameters = module.global_variables.apigw_options_integration_response_parameters
-  response_templates  = {
+  response_templates = {
     "application/json" = file("${path.module}/proxy_response_mapping.template")
   }
 
