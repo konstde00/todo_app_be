@@ -47,10 +47,10 @@ resource "aws_lb_target_group" "int_target_group" {
   tags        = local.ecr_service_tags
 
   health_check {
-    enabled           = var.health_check_enabled
-    port              = var.health_check_port
-    path              = var.health_check_route
-    healthy_threshold = var.health_check_healthy_threshold
+    enabled             = var.health_check_enabled
+    port                = var.health_check_port
+    path                = var.health_check_route
+    healthy_threshold   = var.health_check_healthy_threshold
     unhealthy_threshold = var.health_check_healthy_threshold
     timeout             = var.health_check_timeout
     interval            = var.health_check_interval

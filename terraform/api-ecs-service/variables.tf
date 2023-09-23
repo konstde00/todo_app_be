@@ -51,8 +51,8 @@ variable "vpc_id" {
 }
 
 variable "vpc_internal_subnet_ids" {
-    description = "(Required) List of internal subnet ids"
-    type        = list(string)
+  description = "(Required) List of internal subnet ids"
+  type        = list(string)
 }
 
 variable "vpc_external_subnet_ids" {
@@ -72,8 +72,7 @@ variable "service_name" {
 
 variable "task_role_arn" {
   type        = string
-  description = "(Optional) If the service should assume a certain role for its permissions, specify the ARN of that role"
-  default     = null
+  description = "(Required) The ARN of ECS Task execution role"
 }
 
 variable "provide_external_lb" {
@@ -176,10 +175,9 @@ variable "environment_variables" {
   default = []
 }
 
-variable "execution_role_override" {
-  description = "(Optional) IAM Role ARN for the Agent execution. It is not used in Application Runtime! Use 'task_role_arn' instead."
+variable "execution_role" {
+  description = "(Required) IAM Role ARN for the Agent execution. It is not used in Application Runtime! Use 'task_role_arn' instead."
   type        = string
-  default     = ""
 }
 
 variable "ecs_platform_version" {
@@ -227,10 +225,4 @@ variable "connection_termination" {
   default     = true
   description = "Whether to terminate connections at the end of the deregistration timeout on Network Load Balancers."
   type        = bool
-}
-
-variable "newrelic_jar_path" {
-  default     = "/"
-  description = "absolute path to the newrelic jar in the container"
-  type        = string
 }

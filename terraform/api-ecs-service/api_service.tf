@@ -1,6 +1,6 @@
 locals {
 
-  var_secrets_map     = { for s in var.secrets : s.name => s }
+  var_secrets_map = { for s in var.secrets : s.name => s }
 
   java_heap_mb = coalesce(var.java_heap_mb, 0.9 * var.memory)
 
@@ -11,7 +11,7 @@ locals {
     },
     {
       name  = "JAVA_OPTS"
-      value = "-Xmx${var.java_heap_mb}m -Xms${var.java_heap_mb}m -javaagent:${var.newrelic_jar_path}newrelic.jar ${var.java_opts}"
+      value = "-Xmx${var.java_heap_mb}m -Xms${var.java_heap_mb}m ${var.java_opts}"
     },
     {
       name  = "ENVIRONMENT"
@@ -62,7 +62,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   network_configuration {
     subnets         = concat(var.vpc_internal_subnet_ids, var.vpc_external_subnet_ids)
-    security_groups =  var.security_groups_override
+    security_groups = var.security_groups_override
   }
 
   deployment_circuit_breaker {
@@ -89,8 +89,8 @@ resource "aws_ecs_service" "ecs_service" {
 resource "aws_ecs_task_definition" "task_definition" {
   family                   = "${var.environment_name}-${var.service_name}-task"
   container_definitions    = data.template_file.container_definition.rendered
-  task_role_arn            = var.task_role_arn != null ? var.task_role_arn : ""
-  execution_role_arn       = var.execution_role_override
+  task_role_arn            = var.task_role_arn
+  execution_role_arn       = var.execution_role
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   memory                   = var.memory

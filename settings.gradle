@@ -1,8 +1,6 @@
 
 pluginManagement {
-    repositories {
-        // jhipster-needle-gradle-plugin-management-repositories - JHipster will add additional entries here
-    }
+    repositories {}
     plugins {
         id 'org.springframework.boot' version "${springBootVersion}"
         id 'com.google.cloud.tools.jib' version "${jibPluginVersion}"

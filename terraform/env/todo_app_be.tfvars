@@ -1,9 +1,7 @@
 environment_name            = "staging"
-apigateway_environment_name = "staging"
 spring_profile              = "staging"
 api_desired_count           = 1
 
-apigw_name          = "Staging API Gateway"
 apigw_authorizer_id = ""
 
 tags = {

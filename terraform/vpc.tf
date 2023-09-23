@@ -1,6 +1,6 @@
 module "main_vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-  version = "3.19.0"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.1.2"
 
   name = "main-vpc"
   cidr = "10.0.0.0/16"
@@ -13,7 +13,13 @@ module "main_vpc" {
   enable_vpn_gateway = true
 
   tags = {
-    Terraform = "true"
+    Terraform   = "true"
     Environment = "dev"
   }
+}
+
+resource "aws_db_subnet_group" "aurora_subnet_group" {
+  name        = "aurora_db_subnet_group"
+  description = "Allowed subnets for Aurora DB cluster instances"
+  subnet_ids  = module.main_vpc.private_subnets
 }

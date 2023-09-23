@@ -37,8 +37,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy_attachment" {
 }
 
 resource "aws_s3_bucket" "todo_app_user_attachments" {
-  bucket = "todo_app_user_attachments"
-  acl    = "private"
+  bucket = "todo-app-user-attachments"
 
   tags = {
     Name = "User Attachments Bucket"

@@ -7,7 +7,7 @@
     "cpu": ${cpu},
 
     "essential": true,
-    "secrets": ${secrets},
+    "secrets": [],
     "environment": ${environment_variables},
   
     "portMappings": [
