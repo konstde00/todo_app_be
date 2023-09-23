@@ -1,6 +1,7 @@
 provider "aws" {
   region = "us-east-1"
   profile = "tf_execution_profile"
+  shared_credentials_files = ["~/.aws/credentials"]
 }
 
 terraform {
