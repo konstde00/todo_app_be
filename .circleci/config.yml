@@ -277,19 +277,19 @@ workflows:
 
   deploy_staging:
     jobs:
-      - hold:
-          type: approval
-          name: deploy to staging?
-      - build_container:
-          requires:
-            - deploy to staging?
-          context:
-            - Staging_Context
+#      - hold:
+#          type: approval
+#          name: deploy to staging?
+#      - build_container:
+#          requires:
+#            - deploy to staging?
+#          context:
+#            - Staging_Context
       - tf_plan:
           name: staging_tf_plan
           env: "todo_app_be"
-          requires:
-            - build_container
+#          requires:
+#            - build_container
           context:
             - Staging_Context
       - hold:
