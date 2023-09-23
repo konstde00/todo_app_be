@@ -9,6 +9,7 @@ terraform {
     workspaces {
       name = "todo_app_be"
     }
+
   }
   required_providers {
     aws = {
