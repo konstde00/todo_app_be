@@ -1,6 +1,5 @@
 provider "aws" {
   region = "us-east-1"
-  profile = "tf_execution_profile"
 }
 
 terraform {
