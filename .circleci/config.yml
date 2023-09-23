@@ -169,6 +169,7 @@ jobs:
             pwd
             cd ./terraform
             pwd
+            ls
             echo "TF_WORKSPACE=$TF_WORKSPACE"
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
