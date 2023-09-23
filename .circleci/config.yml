@@ -91,7 +91,7 @@ commands:
           aws_secret_access_key: AWS_SECRET_ACCESS_KEY
           configure_profile_region: true
           region: us-east-1
-          profile-name: tf_execution_profile
+          profile_name: tf_execution_profile
 
   prepare_terraform_workspace:
     description: "Sets environment variable for the terraform workspace"
