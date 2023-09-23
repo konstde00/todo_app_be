@@ -177,12 +177,12 @@ jobs:
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             echo "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $BASH_ENV
             echo "export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $BASH_ENV
-            cat ~/.aws/credentials
       - configure_aws_profile
       - run:
           name: Terraform Init
           command: |
             source $BASH_ENV
+            cat ~/.aws/credentials
             cd ./terraform
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
