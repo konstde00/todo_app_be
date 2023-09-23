@@ -83,14 +83,15 @@ commands:
             echo "export IMAGE_TAG=$IMAGE_TAG" >> ~/.bash_profile
             echo $IMAGE_TAG > ~/image-tag
             echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV
+
   configure_aws_profile:
-    executor: aws-cli/default
     steps:
       - checkout
       - aws-cli/setup:
           aws_access_key_id: AWS_ACCESS_KEY_ID
           aws_secret_access_key: AWS_SECRET_ACCESS_KEY
           aws_region: us-east-1
+
   prepare_terraform_workspace:
     description: "Sets environment variable for the terraform workspace"
     parameters:
