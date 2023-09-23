@@ -9,6 +9,7 @@ resource "aws_api_gateway_resource" "todo_app_api_v1" {
   path_part   = "v1"
 }
 
+
 module "api_v3_audit_pages" {
   source                         = "./apigw-proxy-resource"
   parent_resource_id             = aws_api_gateway_resource.todo_app_api_v1.id
