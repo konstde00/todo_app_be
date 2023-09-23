@@ -96,6 +96,12 @@ commands:
     steps:
       - prepare_image_tag
       - aws-ecr/build-and-push-image:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          registry-id: AWS_ECR_REGISTRY_ID
+          executor: aws-ecr/default
+          public-registry: false
+          push-image: true
           create-repo: false
           no-output-timeout: 20m
           repo: todo_app_be
