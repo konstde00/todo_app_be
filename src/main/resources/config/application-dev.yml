@@ -32,9 +32,9 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:3306/TodoAppBe?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
-    username: root
-    password:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/TodoAppBe?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true}
+    username: ${MYSQL_USER:todo_app}
+    password: ${MYSQL_PASSWORD:must_be_eight_characters}
     hikari:
       poolName: Hikari
       auto-commit: false
