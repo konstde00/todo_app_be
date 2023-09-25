@@ -75,6 +75,8 @@ commands:
       - run:
           name: Prepare the IMAGE_TAG
           command: |
+            echo "export AWS_ECR_ACCOUNT_URL=$AWS_ECR_ACCOUNT_URL" >> ~/.bash_profile
+          
             mkdir -p /tmp/build-data
             SHORT_GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
             BRANCH=$(echo "$CIRCLE_BRANCH" | tr / .)
@@ -99,19 +101,9 @@ commands:
     description: "Build image and push to ECR"
     steps:
       - prepare_image_tag
-      - aws-ecr/build-and-push-image:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          registry-id: AWS_ECR_REGISTRY_ID
-          public-registry: false
-          push-image: true
-          create-repo: false
-          no-output-timeout: 20m
-          repo: todo_app_be
-          region: us-east-1
-          skip-when-tags-exist: true
-          tag: ${IMAGE_TAG}
-
+      - run:
+          name: Build and push image to ECR
+          command: gradle jib
 jobs:
   say-hello:
     docker:

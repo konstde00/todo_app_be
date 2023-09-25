@@ -9,7 +9,7 @@ jib {
         }
     }
     to {
-        image = "local/todoappbe:latest"
+        image = "$System.env.AWS_ECR_ACCOUNT_URL/todo_app_be:$System.env.IMAGE_TAG"
     }
     container {
         entrypoint = ["bash", "-c", "/entrypoint.sh"]
@@ -24,9 +24,6 @@ jib {
     extraDirectories {
       paths = file("src/main/docker/jib")
       permissions = ["/entrypoint.sh": "755"]
-    }
-    jibDockerBuild {
-
     }
 }
 
