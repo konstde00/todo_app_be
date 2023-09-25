@@ -9,10 +9,10 @@ jib {
         }
     }
     to {
-        image = "todoappbe:latest"
+        image = "local/todoappbe:latest"
     }
     container {
-        entrypoint = ["bash", "-c", "../entrypoint.sh"]
+        entrypoint = ["bash", "-c", "/entrypoint.sh"]
         ports = ["8080"]
         environment = [
             SPRING_OUTPUT_ANSI_ENABLED: "ALWAYS",
@@ -24,6 +24,9 @@ jib {
     extraDirectories {
       paths = file("src/main/docker/jib")
       permissions = ["/entrypoint.sh": "755"]
+    }
+    jibDockerBuild {
+
     }
 }
 

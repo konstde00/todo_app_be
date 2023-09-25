@@ -103,6 +103,11 @@ spring:
         #- tls
   jmx:
     enabled: false
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/TodoAppBe?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true}
+    username: ${MYSQL_USER:todo_app}
+    password: ${MYSQL_PASSWORD:must_be_eight_characters}
   data:
     jpa:
       repositories:
@@ -110,8 +115,8 @@ spring:
     elasticsearch:
       repositories:
         enabled: true
-      cluster-name: elasticsearch
-      cluster-nodes: localhost:9300
+#      cluster-name: elasticsearch
+#      cluster-nodes: localhost:9300
   jpa:
     open-in-view: false
     properties:
@@ -134,6 +139,9 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
   messages:
     basename: i18n/messages
   main:
