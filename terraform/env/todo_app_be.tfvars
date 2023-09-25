@@ -12,5 +12,5 @@ tags = {
 apigw_service_name = "todo_app_api"
 
 api_cpu          = 256
-api_memory       = 512
-api_java_heap_mb = 400
+api_memory       = 2048
+api_java_heap_mb = 1500

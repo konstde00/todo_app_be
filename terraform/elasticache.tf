@@ -27,6 +27,8 @@ module "redis" {
   replication_group_id          = "todo-app-redis"
   elasticache_subnet_group_name = aws_elasticache_subnet_group.cache_subnet_group.name
   parameter_group_description = "Parameter group for the todo-app-redis cluster"
+  use_existing_security_groups = true
+  associated_security_group_ids = [aws_security_group.aurora_sg.id]
 
   parameter = [
     {
