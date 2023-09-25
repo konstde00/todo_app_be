@@ -23,3 +23,9 @@ resource "aws_db_subnet_group" "aurora_subnet_group" {
   description = "Allowed subnets for Aurora DB cluster instances"
   subnet_ids  = module.main_vpc.private_subnets
 }
+
+resource "aws_elasticache_subnet_group" "cache_subnet_group" {
+  name        = "elasticache-subnet-group"
+  description = "Allowed subnets for Cache cluster instances"
+  subnet_ids  = module.main_vpc.private_subnets
+}

@@ -1,32 +1,3 @@
-#resource "aws_rds_cluster" "todo_app_db_cluster" {
-#  cluster_identifier = "todo-app-db-cluster"
-#  engine                  = "mysql"
-#  engine_version          = "8.0.34"
-#  engine_mode        = "provisioned"
-#  database_name      = "todo_app_db"
-#  master_username    = "todo_app"
-#  master_password    = "must_be_eight_characters"
-#  availability_zones = [
-#    "us-east-1a",
-#    "us-east-1b",
-#    "us-east-1c"
-#  ]
-#  vpc_security_group_ids = [aws_security_group.aurora_sg.id]
-#  allocated_storage = 5
-#  db_cluster_instance_class = "db.t2.micro"
-#
-#  preferred_backup_window = "07:00-09:00"
-#  db_subnet_group_name    = aws_db_subnet_group.aurora_subnet_group.name
-#
-#  skip_final_snapshot = true
-#
-#  timeouts {
-#    create = "1h"
-#    update = "2h"
-#    delete = "1h"
-#  }
-#}
-
 resource "aws_rds_cluster" "todo_app_db_cluster" {
   cluster_identifier = "todo-app-db-cluster"
   engine             = "aurora-mysql"
@@ -43,7 +14,7 @@ resource "aws_rds_cluster" "todo_app_db_cluster" {
     min_capacity = 0.5
   }
 
-  skip_final_snapshot = true
+  skip_final_snapshot  = true
   db_subnet_group_name = aws_db_subnet_group.aurora_subnet_group.name
 
   timeouts {

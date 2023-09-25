@@ -61,8 +61,8 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   network_configuration {
-    subnets         = concat(var.vpc_external_subnet_ids)
-    security_groups = var.security_groups_override
+    subnets          = concat(var.vpc_external_subnet_ids)
+    security_groups  = var.security_groups_override
     assign_public_ip = true
   }
 
