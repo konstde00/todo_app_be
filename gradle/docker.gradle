@@ -9,7 +9,7 @@ jib {
         }
     }
     to {
-        image = "$System.env.AWS_ECR_ACCOUNT_URL/todo_app_be:$System.env.IMAGE_TAG"
+        image = "553440882962.dkr.ecr.us-east-1.amazonaws.com/todo_app_be:$System.env.IMAGE_TAG"
     }
     container {
         entrypoint = ["bash", "-c", "/entrypoint.sh"]
