@@ -262,6 +262,10 @@ workflows:
       - hold:
           type: approval
           name: deploy to staging?
+          filters:
+            branches:
+              only:
+                - staging
       - build_container:
           requires:
             - deploy to staging?
