@@ -307,7 +307,7 @@ workflows:
           filters:
             branches:
               only:
-                - staging
+                - main
       - tf_plan:
           name: prod_tf_plan
           env: "todo_app_be_prod"
