@@ -149,7 +149,7 @@ jobs:
       env:
         type: string
     docker:
-      - image: hashicorp/terraform:1.0.4
+      - image: hashicorp/terraform:1.3
     steps:
       - checkout_code
       - prepare_image_tag
