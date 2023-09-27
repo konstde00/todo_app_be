@@ -151,8 +151,6 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
-#      - prepare_terraform_workspace:
-#          env: <<parameters.env>>
       - run:
           name: Terraform Init
           command: |
@@ -179,14 +177,11 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
-      - prepare_terraform_workspace:
-          env: <<parameters.env>>
       - run:
           name: Terraform Init
           command: |
             source $BASH_ENV
             cd ./terraform
-            echo "TF_WORKSPACE=$TF_WORKSPACE"
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
           name: Terraform Apply
@@ -195,7 +190,6 @@ jobs:
             cd ./terraform
             cat env/<< parameters.env >>.tfvars > << parameters.env >>.auto.tfvars
             printf '\nimage_tag = "%s"\n' "$IMAGE_TAG" >> .auto.tfvars
-            echo "TF_WORKSPACE=${TF_WORKSPACE}"
             echo "IMAGE_TAG=${IMAGE_TAG}"
             terraform apply -auto-approve
 
@@ -265,19 +259,19 @@ workflows:
 
   deploy_staging:
     jobs:
-#      - hold:
-#          type: approval
-#          name: deploy to staging?
-#      - build_container:
-#          requires:
-#            - deploy to staging?
-#          context:
-#            - Staging_Context
+      - hold:
+          type: approval
+          name: deploy to staging?
+      - build_container:
+          requires:
+            - deploy to staging?
+          context:
+            - Staging_Context
       - tf_plan:
           name: staging_tf_plan
           env: "todo_app_be_staging"
-#          requires:
-#            - build_container
+          requires:
+            - build_container
           context:
             - Staging_Context
       - hold:
