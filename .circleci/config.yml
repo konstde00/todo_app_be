@@ -158,7 +158,6 @@ jobs:
           command: |
             source $BASH_ENV
             cd ./terraform
-            echo "TF_WORKSPACE=$TF_WORKSPACE"
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
           name: Terraform Plan
