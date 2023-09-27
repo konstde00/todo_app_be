@@ -166,7 +166,6 @@ jobs:
             cd ./terraform
             cat env/<< parameters.env >>.tfvars > << parameters.env >>.auto.tfvars
             printf '\nimage_tag = "%s"\n' "${IMAGE_TAG}" >> .auto.tfvars
-            echo "TF_WORKSPACE=${TF_WORKSPACE}"
             echo "IMAGE_TAG=${IMAGE_TAG}"
             terraform plan
 
@@ -266,19 +265,19 @@ workflows:
 
   deploy_staging:
     jobs:
-      - hold:
-          type: approval
-          name: deploy to staging?
-      - build_container:
-          requires:
-            - deploy to staging?
-          context:
-            - Staging_Context
+#      - hold:
+#          type: approval
+#          name: deploy to staging?
+#      - build_container:
+#          requires:
+#            - deploy to staging?
+#          context:
+#            - Staging_Context
       - tf_plan:
           name: staging_tf_plan
           env: "todo_app_be_staging"
-          requires:
-            - build_container
+#          requires:
+#            - build_container
           context:
             - Staging_Context
       - hold:
