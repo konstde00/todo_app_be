@@ -299,6 +299,10 @@ workflows:
       - hold:
           type: approval
           name: deploy to production?
+          filters:
+            branches:
+              only:
+                - main
       - build_container:
           requires:
             - deploy to production?
