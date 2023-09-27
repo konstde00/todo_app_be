@@ -75,8 +75,6 @@ commands:
       - run:
           name: Prepare the IMAGE_TAG
           command: |
-            echo "export AWS_ECR_ACCOUNT_URL=$AWS_ECR_ACCOUNT_URL" >> ~/.bash_profile
-          
             mkdir -p /tmp/build-data
             SHORT_GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
             BRANCH=$(echo "$CIRCLE_BRANCH" | tr / .)
@@ -95,8 +93,8 @@ commands:
       - run:
           name: Prepare TF_WORKSPACE
           command: |
-            echo "workspace = todo_app_be"
-            echo "export TF_WORKSPACE=todo_app_be" >> $BASH_ENV
+            echo "workspace = <<parameters.env>>"
+            echo "export TF_WORKSPACE=<<parameters.env>>" >> $BASH_ENV
   build_and_push_image_to_ecr:
     description: "Build image and push to ECR"
     steps:
@@ -153,12 +151,15 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
+      - prepare_terraform_workspace:
+          env: <<parameters.env>>
       - run:
           name: Terraform Init
           command: |
             source $BASH_ENV
             cd ./terraform
-            terraform init --backend-config="token=${TF_API_KEY} "
+            echo "TF_WORKSPACE=$TF_WORKSPACE"
+            terraform init --backend-config="token=${TF_API_KEY}"
       - run:
           name: Terraform Plan
           command: |
@@ -180,11 +181,14 @@ jobs:
     steps:
       - checkout_code
       - prepare_image_tag
+      - prepare_terraform_workspace:
+          env: <<parameters.env>>
       - run:
           name: Terraform Init
           command: |
             source $BASH_ENV
             cd ./terraform
+            echo "TF_WORKSPACE=$TF_WORKSPACE"
             terraform init --backend-config="token=${TF_API_KEY}"
       - run:
           name: Terraform Apply
@@ -218,7 +222,7 @@ jobs:
                   "workspace": {
                     "data": {
                       "type": "workspaces",
-                      "id": "ws-hqk4mSdcK9d1ohju"
+                      "id": "ws-n8jSaecyQbXoZ362"
                     }
                   }
                 }
@@ -246,7 +250,7 @@ jobs:
                   "workspace": {
                     "data": {
                       "type": "workspaces",
-                      "id": "ws-hqk4mSdcK9d1ohju"
+                      "id": "ws-3xn1izsAQYwnRwoT"
                     }
                   }
                 }
@@ -297,3 +301,40 @@ workflows:
 #            - staging_tf_apply
 #          context:
 #            - Staging_Context
+
+  deploy_production:
+    jobs:
+      - hold:
+          type: approval
+          name: deploy to production?
+      - build_container:
+          requires:
+            - deploy to production?
+          context:
+            - Prod_Context
+      - tf_plan:
+          name: prod_tf_plan
+          env: "prod"
+          requires:
+            - build_container
+          context:
+            - Prod_Context
+      - hold:
+          type: approval
+          name: apply prod terraform?
+          requires:
+            - prod_tf_plan
+      - tf_apply:
+          name:
+            prod_tf_apply
+          requires:
+            - apply prod terraform?
+          env: "prod"
+          context:
+            - Prod_Context
+      - apply_gateway_prod_changes:
+          name: apply_gateway_prod_changes
+          requires:
+            - prod_tf_apply
+          context:
+            - Prod_Context
