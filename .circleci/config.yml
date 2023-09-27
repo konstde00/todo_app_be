@@ -304,6 +304,10 @@ workflows:
       - build_container:
           context:
             - Prod_Context
+          filters:
+            branches:
+              only:
+                - staging
       - tf_plan:
           name: prod_tf_plan
           env: "todo_app_be_prod"
