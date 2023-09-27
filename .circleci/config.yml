@@ -301,16 +301,7 @@ workflows:
 
   deploy_production:
     jobs:
-      - hold:
-          type: approval
-          name: deploy to production?
-          filters:
-            branches:
-              only:
-                - main
       - build_container:
-          requires:
-            - deploy to production?
           context:
             - Prod_Context
       - tf_plan:
