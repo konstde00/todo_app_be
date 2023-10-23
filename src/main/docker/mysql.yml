@@ -5,10 +5,10 @@ services:
     image: mysql:8.1.0
     volumes:
       - ./config/mysql:/etc/mysql/conf.d
+    #   - ~/volumes/jhipster/TodoAppBe/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=todoappbe
-      - MYSQL_USER=root
     ports:
       - 127.0.0.1:3306:3306
     command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp

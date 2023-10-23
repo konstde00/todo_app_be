@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /** View Model object for storing a user's credentials. */
-public class LoginVM {
+public class LoginByEmailAndPasswordVM {
 
   @NotNull
   @Size(min = 1, max = 50)

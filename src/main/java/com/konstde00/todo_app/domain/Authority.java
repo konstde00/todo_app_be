@@ -10,10 +10,12 @@ import java.io.Serializable;
 import java.util.Objects;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.cache.annotation.Cacheable;
 
 /** An authority (a security role) used by Spring Security. */
 @Entity
-@Table(name = "jhi_authority")
+@Cacheable
+@Table(name = "authorities")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Authority implements Serializable {
 
@@ -24,6 +26,12 @@ public class Authority implements Serializable {
   @Id
   @Column(length = 50)
   private String name;
+
+  public Authority() {}
+
+  public Authority(String name) {
+    this.name = name;
+  }
 
   public String getName() {
     return name;
@@ -49,7 +57,6 @@ public class Authority implements Serializable {
     return Objects.hashCode(name);
   }
 
-  // prettier-ignore
   @Override
   public String toString() {
     return "Authority{" + "name='" + name + '\'' + "}";

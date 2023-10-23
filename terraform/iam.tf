@@ -39,6 +39,13 @@ resource "aws_iam_policy" "todo-app-api-access-policy" {
           "s3:PutObject"
         ],
         Resource = "arn:aws:s3:::*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "elasticache:*"
+        ],
+        Resource = "*"
       }
     ]
   })

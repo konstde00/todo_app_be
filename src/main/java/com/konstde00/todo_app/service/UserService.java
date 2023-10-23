@@ -1,27 +1,48 @@
 package com.konstde00.todo_app.service;
 
+import static com.konstde00.todo_app.security.SecurityUtils.AUTHORITIES_KEY;
+import static com.konstde00.todo_app.security.SecurityUtils.JWT_ALGORITHM;
+
 import com.konstde00.todo_app.config.Constants;
 import com.konstde00.todo_app.domain.Authority;
 import com.konstde00.todo_app.domain.User;
+import com.konstde00.todo_app.domain.enums.FeatureFlag;
+import com.konstde00.todo_app.domain.enums.UserRegistrationType;
 import com.konstde00.todo_app.repository.AuthorityRepository;
 import com.konstde00.todo_app.repository.UserRepository;
 import com.konstde00.todo_app.security.AuthoritiesConstants;
 import com.konstde00.todo_app.security.SecurityUtils;
-import com.konstde00.todo_app.service.dto.AdminUserDTO;
+import com.konstde00.todo_app.service.api.dto.CommonIterableResponseMetadata;
+import com.konstde00.todo_app.service.api.dto.PaginationMetadata;
+import com.konstde00.todo_app.service.dto.PaginatedUsersResponseDto;
 import com.konstde00.todo_app.service.dto.UserDTO;
+import com.konstde00.todo_app.service.dto.UserProfileDto;
+import com.konstde00.todo_app.service.exception.BadRequestException;
+import com.konstde00.todo_app.service.exception.EmailAlreadyUsedException;
+import com.konstde00.todo_app.service.exception.InvalidPasswordException;
+import com.konstde00.todo_app.service.exception.UsernameAlreadyUsedException;
+import com.konstde00.todo_app.service.mapper.UserMapper;
+import com.mysql.cj.exceptions.WrongArgumentException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import tech.jhipster.security.RandomUtil;
 
 /** Service class for managing users. */
@@ -38,16 +59,42 @@ public class UserService {
   private final AuthorityRepository authorityRepository;
 
   private final CacheManager cacheManager;
+  private final FileService fileService;
+  private final JwtDecoder jwtDecoder;
+  private final JwtEncoder jwtEncoder;
+
+  @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds:0}")
+  private long tokenValidityInSeconds;
+
+  @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds-for-remember-me:0}")
+  private long tokenValidityInSecondsForRememberMe;
 
   public UserService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       AuthorityRepository authorityRepository,
-      CacheManager cacheManager) {
+      CacheManager cacheManager,
+      FileService fileService,
+      JwtDecoder jwtDecoder,
+      JwtEncoder jwtEncoder) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.authorityRepository = authorityRepository;
     this.cacheManager = cacheManager;
+    this.fileService = fileService;
+    this.jwtDecoder = jwtDecoder;
+    this.jwtEncoder = jwtEncoder;
+  }
+
+  public User getById(String id) {
+
+    if (id == null) {
+      throw new BadRequestException("User ID is null");
+    }
+
+    return userRepository
+        .findById(id)
+        .orElseThrow(() -> new BadRequestException("Not found a user with id " + id));
   }
 
   public Optional<User> activateRegistration(String key) {
@@ -57,12 +104,23 @@ public class UserService {
         .map(
             user -> {
               // activate given user for the registration key.
+              user.setRegistrationType(UserRegistrationType.EMAIL_AND_PASSWORD);
               user.setActivated(true);
               user.setActivationKey(null);
               this.clearUserCaches(user);
               log.debug("Activated user: {}", user);
               return user;
             });
+  }
+
+  public void update(String name) {
+
+    var user = getCurrentUserWithAuthorities();
+    if (name != null) {
+      user.setFirstName(name);
+    }
+
+    userRepository.saveAndFlush(user);
   }
 
   public Optional<User> completePasswordReset(String newPassword, String key) {
@@ -93,7 +151,7 @@ public class UserService {
             });
   }
 
-  public User registerUser(AdminUserDTO userDTO, String password) {
+  public User registerUser(UserProfileDto userDTO, String password) {
     userRepository
         .findOneByLogin(userDTO.getLogin().toLowerCase())
         .ifPresent(
@@ -113,6 +171,7 @@ public class UserService {
               }
             });
     User newUser = new User();
+    newUser.setRegistrationType(UserRegistrationType.EMAIL_AND_PASSWORD);
     String encryptedPassword = passwordEncoder.encode(password);
     newUser.setLogin(userDTO.getLogin().toLowerCase());
     // new user gets initially a generated password
@@ -147,8 +206,9 @@ public class UserService {
     return true;
   }
 
-  public User createUser(AdminUserDTO userDTO) {
+  public User createUser(UserProfileDto userDTO) {
     User user = new User();
+    user.setId(UUID.randomUUID().toString());
     user.setLogin(userDTO.getLogin().toLowerCase());
     user.setFirstName(userDTO.getFirstName());
     user.setLastName(userDTO.getLastName());
@@ -161,7 +221,7 @@ public class UserService {
     } else {
       user.setLangKey(userDTO.getLangKey());
     }
-    String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
+    String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
     user.setPassword(encryptedPassword);
     user.setResetKey(RandomUtil.generateResetKey());
     user.setResetDate(Instant.now());
@@ -175,7 +235,7 @@ public class UserService {
               .collect(Collectors.toSet());
       user.setAuthorities(authorities);
     }
-    userRepository.save(user);
+    User savedUser = userRepository.save(user);
     this.clearUserCaches(user);
     log.debug("Created Information for User: {}", user);
     return user;
@@ -187,7 +247,7 @@ public class UserService {
    * @param userDTO user to update.
    * @return updated user.
    */
-  public Optional<AdminUserDTO> updateUser(AdminUserDTO userDTO) {
+  public Optional<UserProfileDto> updateUser(UserProfileDto userDTO) {
     return Optional.of(userRepository.findById(userDTO.getId()))
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -215,7 +275,7 @@ public class UserService {
               log.debug("Changed Information for User: {}", user);
               return user;
             })
-        .map(AdminUserDTO::new);
+        .map(UserMapper.INSTANCE::toUserProfileDto);
   }
 
   public void deleteUser(String login) {
@@ -275,8 +335,30 @@ public class UserService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
-    return userRepository.findAll(pageable).map(AdminUserDTO::new);
+  public PaginatedUsersResponseDto getAllManagedUsers(
+      String search, Integer pageNumber, Integer pageSize) {
+
+    PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
+    search = search == null ? "" : "%" + search + "%";
+    Page<User> page = userRepository.findAll(search, pageRequest);
+
+    List<UserProfileDto> items =
+        page.getContent().stream()
+            .map(UserMapper.INSTANCE::toUserProfileDto)
+            .collect(Collectors.toList());
+
+    CommonIterableResponseMetadata metadata =
+        new CommonIterableResponseMetadata()
+            .pagination(
+                new PaginationMetadata()
+                    .totalCount(page.getTotalElements())
+                    .totalPageCount(page.getTotalPages())
+                    .pageSize(page.getSize())
+                    .currentPageSize(page.getNumberOfElements())
+                    .currentPageNumber(page.getNumber()));
+
+    return PaginatedUsersResponseDto.builder().items(items).metadata(metadata).build();
   }
 
   @Transactional(readOnly = true)
@@ -293,6 +375,16 @@ public class UserService {
   public Optional<User> getUserWithAuthorities() {
     return SecurityUtils.getCurrentUserLogin()
         .flatMap(userRepository::findOneWithAuthoritiesByLogin);
+  }
+
+  @Transactional(readOnly = true)
+  public User getCurrentUserWithAuthorities() {
+    return getUserWithAuthoritiesByLogin(
+            (String)
+                ((Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                    .getClaims()
+                    .get("sub"))
+        .orElseThrow(() -> new WrongArgumentException("User not found"));
   }
 
   /**
@@ -313,6 +405,35 @@ public class UserService {
             });
   }
 
+  public void uploadAvatar(MultipartFile photo) {
+
+    User currentUser = getCurrentUserWithAuthorities();
+
+    String imageUrl = fileService.updateUsersAvatar(currentUser.getId(), photo);
+
+    currentUser.setImageUrl(imageUrl);
+
+    userRepository.saveAndFlush(currentUser);
+  }
+
+  public void updateFeatureFlag(String userId, Integer featureFlagId, Boolean isSelected) {
+
+    User user = userRepository.findById(userId).orElseThrow();
+
+    FeatureFlag featureFlag = FeatureFlag.fromId(featureFlagId);
+
+    if (isSelected && !user.getFeatureFlags().contains(featureFlag)) {
+
+      user.getFeatureFlags().add(featureFlag);
+
+    } else {
+
+      user.getFeatureFlags().remove(featureFlag);
+    }
+
+    userRepository.saveAndFlush(user);
+  }
+
   /**
    * Gets a list of all the authorities.
    *
@@ -321,6 +442,182 @@ public class UserService {
   @Transactional(readOnly = true)
   public List<String> getAuthorities() {
     return authorityRepository.findAll().stream().map(Authority::getName).toList();
+  }
+
+  @Transactional
+  public void syncWithIdp(String token) {
+    Map<String, Object> attributes = jwtDecoder.decode(token).getClaims();
+
+    User user = getUser(attributes);
+    user.setFeatureFlags(Objects.requireNonNullElse(user.getFeatureFlags(), Set.of()));
+    if (user.getAuthorities() == null) {
+      user.setAuthorities(Set.of(new Authority(AuthoritiesConstants.USER)));
+    }
+
+    UserMapper.INSTANCE.toUserProfileDto(syncUserWithIdP(attributes, user));
+  }
+
+  private static User getUser(Map<String, Object> details) {
+    User user = new User();
+    Boolean activated = Boolean.TRUE;
+    String sub = String.valueOf(details.get("sub"));
+    String username = null;
+    if (details.get("preferred_username") != null) {
+      username = ((String) details.get("preferred_username")).toLowerCase();
+    }
+    // handle resource server JWT, where sub claim is email and uid is ID
+    if (details.get("uid") != null) {
+      user.setId((String) details.get("uid"));
+      user.setLogin(sub);
+    } else {
+      user.setId(sub);
+    }
+    if (username != null) {
+      user.setLogin(username);
+    } else if (user.getLogin() == null) {
+      user.setLogin(user.getId());
+    }
+    if (details.get("given_name") != null) {
+      user.setFirstName((String) details.get("given_name"));
+    } else if (details.get("name") != null) {
+      user.setFirstName((String) details.get("name"));
+    }
+    if (details.get("family_name") != null) {
+      user.setLastName((String) details.get("family_name"));
+    }
+    if (details.get("email_verified") != null) {
+      activated = (Boolean) details.get("email_verified");
+    }
+    if (details.get("email") != null) {
+      user.setEmail(((String) details.get("email")).toLowerCase());
+    } else if (sub.contains("|") && (username != null && username.contains("@"))) {
+      // special handling for Auth0
+      user.setEmail(username);
+    } else {
+      user.setEmail(sub);
+    }
+    if (details.get("langKey") != null) {
+      user.setLangKey((String) details.get("langKey"));
+    } else if (details.get("locale") != null) {
+      // trim off country code if it exists
+      String locale = (String) details.get("locale");
+      if (locale.contains("_")) {
+        locale = locale.substring(0, locale.indexOf('_'));
+      } else if (locale.contains("-")) {
+        locale = locale.substring(0, locale.indexOf('-'));
+      }
+      user.setLangKey(locale.toLowerCase());
+    } else {
+      // set langKey to default if not specified by IdP
+      user.setLangKey(Constants.DEFAULT_LANGUAGE);
+    }
+    if (details.get("picture") != null) {
+      user.setImageUrl((String) details.get("picture"));
+    }
+    user.setActivated(activated);
+    return user;
+  }
+
+  private User syncUserWithIdP(Map<String, Object> details, User user) {
+    // save authorities in to sync user roles/groups between IdP and JHipster's local database
+    Collection<String> dbAuthorities = getAuthorities();
+    Collection<String> userAuthorities =
+        user.getAuthorities().stream().map(Authority::getName).toList();
+    for (String authority : userAuthorities) {
+      if (!dbAuthorities.contains(authority)) {
+        log.debug("Saving authority '{}' in local database", authority);
+        Authority authorityToSave = new Authority();
+        authorityToSave.setName(authority);
+        authorityRepository.save(authorityToSave);
+      }
+    }
+    // save account in to sync users between IdP and JHipster's local database
+    Optional<User> existingUser = userRepository.findOneByLogin(user.getLogin());
+    if (existingUser.isPresent()) {
+      // if IdP sends last updated information, use it to determine if an update should happen
+      if (details.get("updated_at") != null) {
+        Instant dbModifiedDate = existingUser.orElseThrow().getLastModifiedDate();
+        Instant idpModifiedDate;
+        if (details.get("updated_at") instanceof Instant) {
+          idpModifiedDate = (Instant) details.get("updated_at");
+        } else {
+          idpModifiedDate = Instant.ofEpochSecond((Integer) details.get("updated_at"));
+        }
+        if (idpModifiedDate.isAfter(dbModifiedDate)) {
+          log.debug("Updating user '{}' in local database", user.getLogin());
+          updateUser(
+              user.getFirstName(),
+              user.getLastName(),
+              user.getEmail(),
+              user.getLangKey(),
+              user.getImageUrl());
+        }
+        // no last updated info, blindly update
+      } else {
+        log.debug("Updating user '{}' in local database", user.getLogin());
+        updateUser(
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getLangKey(),
+            user.getImageUrl());
+      }
+    } else {
+      log.debug("Saving user '{}' in local database", user.getLogin());
+      user.setRegistrationType(UserRegistrationType.GOOGLE);
+      user.setAuthorities(Set.of(new Authority(AuthoritiesConstants.USER)));
+      user.setFeatureFlags(Set.of());
+      userRepository.save(user);
+      this.clearUserCaches(user);
+    }
+    return user;
+  }
+
+  public String createToken(User user) {
+    String authorities =
+        user.getAuthorities().stream().map(Authority::getName).collect(Collectors.joining(" "));
+
+    Instant now = Instant.now();
+    Instant validity = now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS);
+
+    // @formatter:off
+    JwtClaimsSet claims =
+        JwtClaimsSet.builder()
+            .issuedAt(now)
+            .expiresAt(validity)
+            .subject(user.getLogin())
+            .claim(AUTHORITIES_KEY, authorities)
+            .build();
+
+    JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
+    return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
+  }
+
+  public String createToken(Authentication authentication, boolean rememberMe) {
+    String authorities =
+        authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.joining(" "));
+
+    Instant now = Instant.now();
+    Instant validity;
+    if (rememberMe) {
+      validity = now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS);
+    } else {
+      validity = now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
+    }
+
+    // @formatter:off
+    JwtClaimsSet claims =
+        JwtClaimsSet.builder()
+            .issuedAt(now)
+            .expiresAt(validity)
+            .subject(authentication.getName())
+            .claim(AUTHORITIES_KEY, authorities)
+            .build();
+
+    JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
+    return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
   }
 
   private void clearUserCaches(User user) {

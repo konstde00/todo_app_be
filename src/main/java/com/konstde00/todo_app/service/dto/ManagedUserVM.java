@@ -1,9 +1,9 @@
-package com.konstde00.todo_app.web.rest.vm;
+package com.konstde00.todo_app.service.dto;
 
-import com.konstde00.todo_app.service.dto.AdminUserDTO;
 import jakarta.validation.constraints.Size;
 
-public class ManagedUserVM extends AdminUserDTO {
+/** View Model extending the AdminUserDTO, which is meant to be used in the user management UI. */
+public class ManagedUserVM extends UserProfileDto {
 
   public static final int PASSWORD_MIN_LENGTH = 4;
 
@@ -13,6 +13,7 @@ public class ManagedUserVM extends AdminUserDTO {
   private String password;
 
   public ManagedUserVM() {
+    super();
     // Empty constructor needed for Jackson.
   }
 

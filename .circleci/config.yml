@@ -3,8 +3,6 @@
 version: 2.1
 
 executors:
-  # A virtual machine environment where the executes. Required to create containers on-demand (Testcontainers)
-  # https://www.testcontainers.org/supported_docker_environment/continuous_integration/circle_ci/
   machine-test-executor:
     machine:
       image: ubuntu-2004:2022.10.1

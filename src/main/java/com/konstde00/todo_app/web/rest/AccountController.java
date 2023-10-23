@@ -5,11 +5,12 @@ import com.konstde00.todo_app.repository.UserRepository;
 import com.konstde00.todo_app.security.SecurityUtils;
 import com.konstde00.todo_app.service.MailService;
 import com.konstde00.todo_app.service.UserService;
-import com.konstde00.todo_app.service.dto.AdminUserDTO;
+import com.konstde00.todo_app.service.dto.ManagedUserVM;
 import com.konstde00.todo_app.service.dto.PasswordChangeDTO;
+import com.konstde00.todo_app.service.dto.UserProfileDto;
+import com.konstde00.todo_app.service.mapper.UserMapper;
 import com.konstde00.todo_app.web.rest.errors.*;
 import com.konstde00.todo_app.web.rest.vm.KeyAndPasswordVM;
-import com.konstde00.todo_app.web.rest.vm.ManagedUserVM;
 import jakarta.validation.Valid;
 import java.util.*;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 /** REST controller for managing the current user's account. */
 @RestController
 @RequestMapping("/api")
-public class AccountResource {
+public class AccountController {
 
   private static class AccountResourceException extends RuntimeException {
 
@@ -30,7 +31,7 @@ public class AccountResource {
     }
   }
 
-  private final Logger log = LoggerFactory.getLogger(AccountResource.class);
+  private final Logger log = LoggerFactory.getLogger(AccountController.class);
 
   private final UserRepository userRepository;
 
@@ -38,7 +39,7 @@ public class AccountResource {
 
   private final MailService mailService;
 
-  public AccountResource(
+  public AccountController(
       UserRepository userRepository, UserService userService, MailService mailService) {
     this.userRepository = userRepository;
     this.userService = userService;
@@ -84,10 +85,10 @@ public class AccountResource {
    * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be returned.
    */
   @GetMapping("/account")
-  public AdminUserDTO getAccount() {
+  public UserProfileDto getAccount() {
     return userService
         .getUserWithAuthorities()
-        .map(AdminUserDTO::new)
+        .map(UserMapper.INSTANCE::toUserProfileDto)
         .orElseThrow(() -> new AccountResourceException("User could not be found"));
   }
 
@@ -99,7 +100,7 @@ public class AccountResource {
    * @throws RuntimeException {@code 500 (Internal Server Error)} if the user login wasn't found.
    */
   @PostMapping("/account")
-  public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
+  public void saveAccount(@Valid @RequestBody UserProfileDto userDTO) {
     String userLogin =
         SecurityUtils.getCurrentUserLogin()
             .orElseThrow(() -> new AccountResourceException("Current user login not found"));

@@ -14,6 +14,8 @@ resource "aws_rds_cluster" "todo_app_db_cluster" {
     min_capacity = 0.5
   }
 
+  enable_http_endpoint = true
+
   skip_final_snapshot  = true
   db_subnet_group_name = aws_db_subnet_group.aurora_subnet_group.name
 
@@ -40,10 +42,9 @@ resource "aws_rds_cluster_instance" "todo_app_db_instance" {
 resource "aws_security_group" "aurora_sg" {
   name        = "aurora_sg"
   description = "Security group for Aurora DB cluster"
-  vpc_id      = module.main_vpc.vpc_id
+  vpc_id      = aws_vpc.main_vpc.id
 
   ingress {
-    description     = "TLS from VPC"
     security_groups = [aws_security_group.api_sg.id]
     from_port       = 3306
     to_port         = 3306

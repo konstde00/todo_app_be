@@ -6,30 +6,29 @@ import com.konstde00.todo_app.repository.UserRepository;
 import com.konstde00.todo_app.security.AuthoritiesConstants;
 import com.konstde00.todo_app.service.MailService;
 import com.konstde00.todo_app.service.UserService;
-import com.konstde00.todo_app.service.dto.AdminUserDTO;
+import com.konstde00.todo_app.service.dto.PaginatedUsersResponseDto;
+import com.konstde00.todo_app.service.dto.UserProfileDto;
+import com.konstde00.todo_app.service.exception.BadRequestException;
+import com.konstde00.todo_app.service.mapper.UserMapper;
 import com.konstde00.todo_app.web.rest.errors.BadRequestAlertException;
 import com.konstde00.todo_app.web.rest.errors.EmailAlreadyUsedException;
 import com.konstde00.todo_app.web.rest.errors.LoginAlreadyUsedException;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.Collections;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.multipart.MultipartFile;
 import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -60,24 +59,9 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api/admin")
-public class UserResource {
+public class UserController {
 
-  private static final List<String> ALLOWED_ORDERED_PROPERTIES =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              "id",
-              "login",
-              "firstName",
-              "lastName",
-              "email",
-              "activated",
-              "langKey",
-              "createdBy",
-              "createdDate",
-              "lastModifiedBy",
-              "lastModifiedDate"));
-
-  private final Logger log = LoggerFactory.getLogger(UserResource.class);
+  private final Logger log = LoggerFactory.getLogger(UserController.class);
 
   @Value("${jhipster.clientApp.name}")
   private String applicationName;
@@ -88,11 +72,25 @@ public class UserResource {
 
   private final MailService mailService;
 
-  public UserResource(
+  public UserController(
       UserService userService, UserRepository userRepository, MailService mailService) {
     this.userService = userService;
     this.userRepository = userRepository;
     this.mailService = mailService;
+  }
+
+  @GetMapping("/users")
+  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+  public ResponseEntity<PaginatedUsersResponseDto> getAllUsers(
+      @RequestParam(name = "search", required = false, defaultValue = StringUtils.EMPTY)
+          String search,
+      @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
+      @RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize) {
+
+    PaginatedUsersResponseDto responseDto =
+        userService.getAllManagedUsers(search, pageNumber, pageSize);
+
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   /**
@@ -109,8 +107,7 @@ public class UserResource {
    *     use.
    */
   @PostMapping("/users")
-  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-  public ResponseEntity<User> createUser(@Valid @RequestBody AdminUserDTO userDTO)
+  public ResponseEntity<UserProfileDto> createUser(@Valid @RequestBody UserProfileDto userDTO)
       throws URISyntaxException {
     log.debug("REST request to save User : {}", userDTO);
 
@@ -119,19 +116,16 @@ public class UserResource {
           "A new user cannot already have an ID", "userManagement", "idexists");
       // Lowercase the user login before comparing with database
     } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
-      throw new LoginAlreadyUsedException();
-    } else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
-      throw new EmailAlreadyUsedException();
+      throw new BadRequestException("Login already used");
     } else {
-      User newUser = userService.createUser(userDTO);
-      mailService.sendCreationEmail(newUser);
-      return ResponseEntity.created(new URI("/api/admin/users/" + newUser.getLogin()))
-          .headers(
-              HeaderUtil.createAlert(
-                  applicationName,
-                  "A user is created with identifier " + newUser.getLogin(),
-                  newUser.getLogin()))
-          .body(newUser);
+      User createdUser = userService.createUser(userDTO);
+
+      UserProfileDto responseDto = UserMapper.INSTANCE.toUserProfileDto(createdUser);
+      responseDto.setToken(userDTO.getToken());
+      responseDto.setToken(userService.createToken(createdUser));
+
+      return ResponseEntity.created(new URI("/api/admin/users/" + responseDto.getLogin()))
+          .body(responseDto);
     }
   }
 
@@ -145,7 +139,7 @@ public class UserResource {
    */
   @PutMapping("/users")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-  public ResponseEntity<AdminUserDTO> updateUser(@Valid @RequestBody AdminUserDTO userDTO) {
+  public ResponseEntity<UserProfileDto> updateUser(@Valid @RequestBody UserProfileDto userDTO) {
     log.debug("REST request to update User : {}", userDTO);
     Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
     if (existingUser.isPresent() && (!existingUser.orElseThrow().getId().equals(userDTO.getId()))) {
@@ -155,7 +149,7 @@ public class UserResource {
     if (existingUser.isPresent() && (!existingUser.orElseThrow().getId().equals(userDTO.getId()))) {
       throw new LoginAlreadyUsedException();
     }
-    Optional<AdminUserDTO> updatedUser = userService.updateUser(userDTO);
+    Optional<UserProfileDto> updatedUser = userService.updateUser(userDTO);
 
     return ResponseUtil.wrapOrNotFound(
         updatedUser,
@@ -163,35 +157,6 @@ public class UserResource {
             applicationName,
             "A user is updated with identifier " + userDTO.getLogin(),
             userDTO.getLogin()));
-  }
-
-  /**
-   * {@code GET /admin/users} : get all users with all the details - calling this are only allowed
-   * for the administrators.
-   *
-   * @param pageable the pagination information.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
-   */
-  @GetMapping("/users")
-  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-  public ResponseEntity<List<AdminUserDTO>> getAllUsers(
-      @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-    log.debug("REST request to get all User for an admin");
-    if (!onlyContainsAllowedProperties(pageable)) {
-      return ResponseEntity.badRequest().build();
-    }
-
-    final Page<AdminUserDTO> page = userService.getAllManagedUsers(pageable);
-    HttpHeaders headers =
-        PaginationUtil.generatePaginationHttpHeaders(
-            ServletUriComponentsBuilder.fromCurrentRequest(), page);
-    return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
-  }
-
-  private boolean onlyContainsAllowedProperties(Pageable pageable) {
-    return pageable.getSort().stream()
-        .map(Sort.Order::getProperty)
-        .allMatch(ALLOWED_ORDERED_PROPERTIES::contains);
   }
 
   /**
@@ -203,11 +168,43 @@ public class UserResource {
    */
   @GetMapping("/users/{login}")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-  public ResponseEntity<AdminUserDTO> getUser(
+  public ResponseEntity<UserProfileDto> getUser(
       @PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
     log.debug("REST request to get User : {}", login);
     return ResponseUtil.wrapOrNotFound(
-        userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new));
+        userService
+            .getUserWithAuthoritiesByLogin(login)
+            .map(UserMapper.INSTANCE::toUserProfileDto));
+  }
+
+  @PatchMapping("/v1/feature-flag")
+  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+  public ResponseEntity<?> updateFeatureFlag(
+      @RequestParam String userId,
+      @RequestParam Integer featureFlagId,
+      @RequestParam Boolean isSelected) {
+
+    userService.updateFeatureFlag(userId, featureFlagId, isSelected);
+
+    return new ResponseEntity<>(HttpStatus.ACCEPTED);
+  }
+
+  @PatchMapping("/v1")
+  @Operation(summary = "Update user")
+  public ResponseEntity<?> update(@RequestParam(required = false) String name) {
+
+    userService.update(name);
+
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/v1/upload")
+  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.USER + "\")")
+  public ResponseEntity<?> uploadAvatar(@RequestParam("photo") MultipartFile photo) {
+
+    userService.uploadAvatar(photo);
+
+    return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
 
   /**

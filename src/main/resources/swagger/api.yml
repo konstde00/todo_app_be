@@ -10,8 +10,12 @@ tags:
   - name: tasks
     description: Operations related to tasks
 paths:
-  /tasks:
+  /api/tasks:
     get:
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/TaskStatusEnum'
       tags:
         - tasks
       operationId: getTasks
@@ -22,9 +26,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/GetTasksResponseDto'
     post:
       tags:
         - tasks
@@ -36,26 +38,352 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Task'
+              $ref: '#/components/schemas/CreateTaskRequestDto'
       responses:
-        '201':
+        201:
           description: Created task
-        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTaskResponseDto'
+        400:
           description: Bad request
 
+  /api/tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      tags:
+        - tasks
+      operationId: getTask
+      summary: Get task by ID
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTaskResponseDto'
+        '400':
+          description: Bad request
+        '404':
+          description: No tasks with given ID exists
+    patch:
+      tags:
+        - tasks
+      operationId: updateTask
+      summary: Update task
+      requestBody:
+        description: Task details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequestDto'
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTaskResponseDto'
+        '400':
+          description: Bad request
+        '404':
+          description: No tasks with given ID exists
+    delete:
+      tags:
+        - tasks
+      operationId: deleteTask
+      summary: Delete a task
+      responses:
+        200:
+          description: Deleted task
+        400:
+          description: Bad request
+        404:
+          description: No tasks with given ID exists
+
+  /api/tasks/analytics/percentage-by-status:
+    get:
+      tags:
+        - analytics
+      operationId: getPercentageByStatus
+      summary: Get percentage of tasks by status
+      responses:
+        '200':
+          description: Percentage of tasks by status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPercentageByStatusResponseDto'
+
+  /api/tasks/analytics/status-by-priority:
+    get:
+      tags:
+        - analytics
+      operationId: getStatusByPriority
+      summary: Get status of tasks by priority
+      responses:
+        '200':
+          description: Percentage of tasks by status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStatusByPriorityResponseDto'
 
 components:
+
+  parameters:
+    pageParam:
+      in: query
+      name: pageNumber
+      description: Number of results page of an endpoint with paginated results
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+
+    PageSizeParam:
+      in: query
+      name: pageSize
+      required: false
+      schema:
+        type: integer
+        maximum: 1000
+        default: 50
+        minimum: 50
+
+    SortDescendingParam:
+      name: sortDesc
+      in: query
+      description: Controls sorting order
+      required: false
+      schema:
+        type: boolean
+        default: false
+
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      description: Unique identification number for task
+      deprecated: false
+      allowEmptyValue: false
+      schema:
+        $ref: '#/components/schemas/TaskId'
+
+    TaskStatusEnum:
+      name: status
+      in: query
+      required: true
+      description: Unique identification number for task
+      deprecated: false
+      allowEmptyValue: false
+      schema:
+        $ref: '#/components/schemas/TaskStatusEnum'
+
   schemas:
-    Task:
+
+    ##################
+    ## Common types ##
+
+    TaskId:
+      type: integer
+      format: int64
+      description: ID of a task
+      example: 123
+
+    TaskStatusEnum:
+      type: string
+      enum:
+        - NOT_STARTED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+      description: Status of a task
+      example: COMPLETED
+
+    TaskPriorityEnum:
+      type: string
+      enum:
+        - LOW
+        - MEDIUM
+        - HIGH
+      description: Priority of a task
+      example: MEDIUM
+
+    ## Common types ##
+    ##################
+    ##  Pagination  ##
+
+    CommonIterableResponseMetadata:
+      description: Common metadata for iterable
       type: object
+      required:
+        - pagination
       properties:
-        id:
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+
+    PaginationMetadata:
+      type: object
+      required:
+        - totalCount
+        - totalPageCount
+        - pageSize
+        - currentPageSize
+        - currentPageNumber
+      properties:
+        totalCount:
+          description: Total number of items available from all result pages combined
           type: integer
           format: int64
-          readOnly: true
+        totalPageCount:
+          description: Total number of pages available
+          type: integer
+        pageSize:
+          description: Page size - number of items per result page configured by `size` query parameter or default page size
+          type: integer
+        currentPageSize:
+          description: Number of items in current result page
+          type: integer
+        currentPageNumber:
+          description: Current page number/ordinal
+          type: integer
+
+    ##  Pagination  ##
+    ##################
+    ##    Tasks     ##
+
+    GetTasksResponseDto:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/CommonIterableResponseMetadata'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskItem'
+
+    GetTaskResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/TaskWithIdTrait'
+
+    TaskTrait:
+      type: object
+      required:
+        - title
+        - status
+        - priority
+        - position
+      properties:
         title:
           type: string
         description:
           type: string
-        completed:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/TaskStatusEnum'
+        priority:
+          $ref: '#/components/schemas/TaskPriorityEnum'
+        position:
+            type: integer
+
+    TaskWithIdTrait:
+      allOf:
+        - $ref: '#/components/schemas/TaskTrait'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              $ref: '#/components/schemas/TaskId'
+
+    TaskItem:
+      allOf:
+        - $ref: '#/components/schemas/TaskWithIdTrait'
+
+    CreateTaskRequestDto:
+      allOf:
+        - $ref: '#/components/schemas/TaskTrait'
+
+    CreateTaskResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/TaskWithIdTrait'
+
+    UpdateTaskRequestDto:
+      allOf:
+        - $ref: '#/components/schemas/TaskTrait'
+
+    UpdateTaskResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/TaskWithIdTrait'
+
+    ##    Tasks     ##
+    ##################
+    ##  Analytics   ##
+
+    GetPercentageByStatusResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PercentageByStatusItem'
+
+    PercentageByStatusItem:
+        type: object
+        required:
+            - status
+            - percentage
+        properties:
+          status:
+            $ref: '#/components/schemas/TaskStatusEnum'
+          percentage:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 100
+            description: Percentage of tasks with given status
+            example: 50.0
+
+    GetStatusByPriorityResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusByPriorityItem'
+
+    StatusByPriorityItem:
+      type: object
+      required:
+        - priority
+        - status
+      properties:
+        priority:
+          $ref: '#/components/schemas/TaskPriorityEnum'
+        statusItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusItem'
+
+    StatusItem:
+        type: object
+        required:
+            - status
+            - count
+        properties:
+          status:
+            $ref: '#/components/schemas/TaskStatusEnum'
+          count:
+            type: integer
+            format: int64
+            description: Number of tasks with given status
+            example: 123
+
+    ##  Analytics   ##
+    ##################
+
+

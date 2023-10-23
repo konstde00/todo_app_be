@@ -41,7 +41,7 @@ module "todo_app_api_service" {
   image_tag        = var.image_tag
   tags             = var.tags
 
-  vpc_id = module.main_vpc.vpc_id
+  vpc_id = aws_vpc.main_vpc.id
   security_groups_override = [
     aws_security_group.api_sg.id
     #    data.terraform_remote_state.shared_network.outputs.vpc_internal_only_security_group_id,
@@ -59,22 +59,23 @@ module "todo_app_api_service" {
   health_check_timeout              = 25
 
   environment_variables = [
-    { name : "APP_TYPE", value : "api" },
-    { name : "MYSQL_URL", value: aws_rds_cluster_instance.todo_app_db_instance.endpoint },
-    { name : "S3_BUCKET_URL", value : aws_s3_bucket.todo_app_user_attachments.bucket },
-    { name : "REDIS_SERVER", value : module.redis.endpoint }
+    { name : "MYSQL_URL", value: "jdbc:mysql://${aws_rds_cluster.todo_app_db_cluster.endpoint}/todo_app_db" },
+    { name : "MYSQL_USER", value: "todo_app" },
+    { name : "MYSQL_PASSWORD", value: "must_be_eight_characters" },
+    { name : "S3_BUCKET_NAME", value : aws_s3_bucket.todo_app_user_attachments.bucket },
+    { name : "REDIS_SERVER", value : "redis://${module.redis.endpoint}:6379" }
   ]
 
   task_role_arn = aws_iam_role.todo-app-api-role.arn
   execution_role = aws_iam_role.todo-app-api-execution-role.arn
-  vpc_external_subnet_ids = module.main_vpc.public_subnets
-  vpc_internal_subnet_ids = module.main_vpc.public_subnets
+  vpc_external_subnet_ids = [aws_subnet.public_subnet1.id]
+  vpc_internal_subnet_ids = [aws_subnet.public_subnet1.id]
 }
 
 resource "aws_security_group" "api_sg" {
   name        = "api_sg"
   description = "Security group for API"
-  vpc_id      = module.main_vpc.vpc_id
+  vpc_id      = aws_vpc.main_vpc.id
 
   ingress {
     from_port        = 0

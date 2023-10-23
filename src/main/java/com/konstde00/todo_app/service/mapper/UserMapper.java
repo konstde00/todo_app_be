@@ -2,23 +2,23 @@ package com.konstde00.todo_app.service.mapper;
 
 import com.konstde00.todo_app.domain.Authority;
 import com.konstde00.todo_app.domain.User;
-import com.konstde00.todo_app.service.dto.AdminUserDTO;
+import com.konstde00.todo_app.domain.enums.FeatureFlag;
 import com.konstde00.todo_app.service.dto.UserDTO;
+import com.konstde00.todo_app.service.dto.UserProfileDto;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 
-/**
- * Mapper for the entity {@link User} and its DTO called {@link UserDTO}.
- *
- * <p>Normal mappers are generated using MapStruct, this one is hand-coded as MapStruct support is
- * still in beta, and requires a manual step with an IDE.
- */
 @Service
-public class UserMapper {
+@Mapper(componentModel = "spring")
+public abstract class UserMapper {
+
+  public static UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
   public List<UserDTO> usersToUserDTOs(List<User> users) {
     return users.stream().filter(Objects::nonNull).map(this::userToUserDTO).toList();
@@ -28,19 +28,18 @@ public class UserMapper {
     return new UserDTO(user);
   }
 
-  public List<AdminUserDTO> usersToAdminUserDTOs(List<User> users) {
-    return users.stream().filter(Objects::nonNull).map(this::userToAdminUserDTO).toList();
+  public List<UserProfileDto> usersToAdminUserDTOs(List<User> users) {
+    return users.stream()
+        .filter(Objects::nonNull)
+        .map(UserMapper.INSTANCE::toUserProfileDto)
+        .toList();
   }
 
-  public AdminUserDTO userToAdminUserDTO(User user) {
-    return new AdminUserDTO(user);
-  }
-
-  public List<User> userDTOsToUsers(List<AdminUserDTO> userDTOs) {
+  public List<User> userDTOsToUsers(List<UserProfileDto> userDTOs) {
     return userDTOs.stream().filter(Objects::nonNull).map(this::userDTOToUser).toList();
   }
 
-  public User userDTOToUser(AdminUserDTO userDTO) {
+  public User userDTOToUser(UserProfileDto userDTO) {
     if (userDTO == null) {
       return null;
     } else {
@@ -77,7 +76,7 @@ public class UserMapper {
     return authorities;
   }
 
-  public User userFromId(Long id) {
+  public User userFromId(String id) {
     if (id == null) {
       return null;
     }
@@ -126,6 +125,22 @@ public class UserMapper {
     userDto.setId(user.getId());
     userDto.setLogin(user.getLogin());
     return userDto;
+  }
+
+  @Mapping(target = "authorities", qualifiedByName = "mapAuthorities")
+  @Mapping(target = "featureFlags", qualifiedByName = "mapFeatureFlags")
+  public abstract UserProfileDto toUserProfileDto(User user);
+
+  @Named("mapAuthorities")
+  public static Set<String> mapAuthorities(Set<Authority> authorities) {
+
+    return authorities.stream().map(Authority::getName).collect(Collectors.toSet());
+  }
+
+  @Named("mapFeatureFlags")
+  public static Set<Integer> mapFeatureFlags(Set<FeatureFlag> authorities) {
+
+    return authorities.stream().map(FeatureFlag::getId).collect(Collectors.toSet());
   }
 
   @Named("loginSet")

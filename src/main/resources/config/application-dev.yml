@@ -19,11 +19,36 @@ logging:
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
     com.konstde00.todo_app: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot: DEBUG
+    org: DEBUG
 
 spring:
+  jpa:
+    show-sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 116154229086-6i9qgcthsq1bbl2f5pbcfgejek6bbdul.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - openid
+              - https://www.googleapis.com/auth/userinfo.profile
+              - https://www.googleapis.com/auth/userinfo.email
+        provider:
+          oidc:
+            issuer-uri: https://accounts.google.com
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
   devtools:
     restart:
-      enabled: true
+      enabled: false
       additional-exclude: static/**
     livereload:
       enabled: false # we use Webpack dev server + BrowserSync for livereload
@@ -32,10 +57,9 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/TodoAppBe?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true}
-    username: ${MYSQL_USER:todo_app}
-    password: ${MYSQL_PASSWORD:must_be_eight_characters}
-
+    url: jdbc:mysql://localhost:3306/TodoAppBe?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+    username: root
+    password:
     hikari:
       poolName: Hikari
       auto-commit: false
@@ -44,6 +68,7 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
+      keepalive-time: 300000 # 5 minutes
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
@@ -56,6 +81,25 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
+
+s3:
+  access-key: ${AWS_ACCESS_KEY:test}
+  secret-key: ${AWS_SECRET_KEY:test}
+  service-endpoint: s3.us-east-1.amazonaws.com
+  signing-region: us-east-1
+  bucket-name: ${BUCKET_NAME:todo-app-user-attachments}
+  folders:
+    avatars: avatars
+
+aws:
+  region: us-east-1
+  s3:
+    bucket: ${BUCKET_NAME:todo-app-user-attachments}
+    endpoint: s3.us-east-1.amazonaws.com
+    folders:
+      avatars: avatars
+      films: films
+
 
 server:
   port: 8080
@@ -86,6 +130,11 @@ jhipster:
     allow-credentials: true
     max-age: 1800
   security:
+    oauth2:
+      audience:
+        - account
+        - api://default
+        - 116154229086-6i9qgcthsq1bbl2f5pbcfgejek6bbdul.apps.googleusercontent.com
     authentication:
       jwt:
         # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)

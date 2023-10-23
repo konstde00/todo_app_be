@@ -6,10 +6,6 @@ locals {
 
   default_environment_variables = [
     {
-      name  = "NEW_RELIC_APP_NAME"
-      value = var.service_name
-    },
-    {
       name  = "JAVA_OPTS"
       value = "-Xmx${var.java_heap_mb}m -Xms${var.java_heap_mb}m ${var.java_opts}"
     },

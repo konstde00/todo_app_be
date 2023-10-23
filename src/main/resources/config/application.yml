@@ -101,13 +101,26 @@ spring:
         - api-docs
         # Uncomment to activate TLS for the dev profile
         #- tls
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 116154229086-6i9qgcthsq1bbl2f5pbcfgejek6bbdul.apps.googleusercontent.com
+            client-secret: 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
+            scope: openid,profile,email
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
   jmx:
     enabled: false
   datasource:
+    type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/TodoAppBe?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true}
-    username: ${MYSQL_USER:todo_app}
-    password: ${MYSQL_PASSWORD:must_be_eight_characters}
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/TodoAppBe?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD}
   data:
     jpa:
       repositories:
@@ -140,7 +153,7 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: true
   messages:
     basename: i18n/messages

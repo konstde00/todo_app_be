@@ -2,6 +2,8 @@ package com.konstde00.todo_app.web.rest.errors;
 
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 
+import com.konstde00.todo_app.service.exception.EmailAlreadyUsedException;
+import com.konstde00.todo_app.service.exception.UsernameAlreadyUsedException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;
@@ -87,13 +89,12 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
   }
 
   private ProblemDetailWithCause getProblemDetailWithCause(Throwable ex) {
-    if (ex instanceof com.konstde00.todo_app.service.EmailAlreadyUsedException
-        || ex instanceof com.konstde00.todo_app.service.UsernameAlreadyUsedException) {
+    if (ex instanceof EmailAlreadyUsedException || ex instanceof UsernameAlreadyUsedException) {
       // return 201 - CREATED on purpose to not reveal information to potential attackers
       // see https://github.com/jhipster/generator-jhipster/issues/21731
       return ProblemDetailWithCauseBuilder.instance().withStatus(201).build();
     }
-    if (ex instanceof com.konstde00.todo_app.service.InvalidPasswordException)
+    if (ex instanceof com.konstde00.todo_app.service.exception.InvalidPasswordException)
       return (ProblemDetailWithCause) new InvalidPasswordException().getBody();
 
     if (ex instanceof ErrorResponseException exp

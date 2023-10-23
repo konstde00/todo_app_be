@@ -1,4 +1,4 @@
-package com.konstde00.todo_app.service;
+package com.konstde00.todo_app.service.exception;
 
 public class InvalidPasswordException extends RuntimeException {
 

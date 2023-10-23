@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.konstde00.todo_app.security.AuthoritiesConstants;
-import com.konstde00.todo_app.web.rest.UserResource;
+import com.konstde00.todo_app.web.rest.UserController;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 public class UserStepDefs extends StepDefs {
 
-  @Autowired private UserResource userResource;
+  @Autowired private UserController userController;
 
   private MockMvc userResourceMock;
 
@@ -39,7 +39,7 @@ public class UserStepDefs extends StepDefs {
     SecurityContext context = SecurityContextHolder.createEmptyContext();
     context.setAuthentication(authentication);
     SecurityContextHolder.setContext(context);
-    this.userResourceMock = MockMvcBuilders.standaloneSetup(userResource).build();
+    this.userResourceMock = MockMvcBuilders.standaloneSetup(userController).build();
   }
 
   @When("I search user {string}")

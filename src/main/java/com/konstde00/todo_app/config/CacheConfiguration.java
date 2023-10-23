@@ -1,5 +1,8 @@
 package com.konstde00.todo_app.config;
 
+import static com.konstde00.todo_app.service.TaskService.TASKS_CACHE_NAME;
+import static com.konstde00.todo_app.service.TaskService.TASK_CACHE_NAME;
+
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import javax.cache.configuration.MutableConfiguration;
@@ -25,7 +28,7 @@ import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.config.cache.PrefixedKeyGenerator;
 
 @Configuration
-@EnableCaching
+@EnableCaching(mode = AdviceMode.ASPECTJ)
 public class CacheConfiguration {
 
   private GitProperties gitProperties;
@@ -98,12 +101,17 @@ public class CacheConfiguration {
           com.konstde00.todo_app.repository.UserRepository.USERS_BY_EMAIL_CACHE,
           jcacheConfiguration);
       createCache(cm, com.konstde00.todo_app.domain.User.class.getName(), jcacheConfiguration);
-      createCache(cm, com.konstde00.todo_app.domain.Authority.class.getName(), jcacheConfiguration);
       createCache(
           cm,
           com.konstde00.todo_app.domain.User.class.getName() + ".authorities",
           jcacheConfiguration);
-      // jhipster-needle-redis-add-entry
+      createCache(cm, com.konstde00.todo_app.domain.Authority.class.getName(), jcacheConfiguration);
+      createCache(cm, com.konstde00.todo_app.domain.Task.class.getName(), jcacheConfiguration);
+
+      createCache(cm, "users_authorities", jcacheConfiguration);
+
+      createCache(cm, TASK_CACHE_NAME, jcacheConfiguration);
+      createCache(cm, TASKS_CACHE_NAME, jcacheConfiguration);
     };
   }
 

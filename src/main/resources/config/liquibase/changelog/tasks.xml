@@ -8,8 +8,8 @@
 
         <createTable tableName="tasks">
 
-            <column name="id" type="bigint">
-                <constraints primaryKey="true" nullable="false" />
+            <column name="id" type="bigint" autoIncrement="true" startWith="1050">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
 
             <column name="title" type="VARCHAR(255)">
@@ -17,6 +17,8 @@
             </column>
 
             <column name="description" type="TEXT" />
+
+            <column name="position" type="numeric" />
 
             <column name="due_date" type="TIMESTAMP" />
 
@@ -28,9 +30,35 @@
                 <constraints nullable="false" />
             </column>
 
-            <column name="created_at" type="timestamp" />
+            <column name="created_by" type="varchar(100)" />
+            <column name="created_at" type="timestamp"/>
+
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_at" type="timestamp"/>
 
         </createTable>
+
+        <createSequence  cacheSize="1000000"
+                         cycle="true"
+                         dataType="bigint"
+                         incrementBy="1"
+                         maxValue="1000000000"
+                         minValue="500"
+                         schemaName="public"
+                         sequenceName="tasks_id_seq"
+                         startValue="501"/>
+
+        <addForeignKeyConstraint baseColumnNames="created_by"
+                                 baseTableName="tasks"
+                                 constraintName="fk_tasks_created_by"
+                                 referencedColumnNames="id"
+                                 referencedTableName="users"/>
+
+        <addForeignKeyConstraint baseColumnNames="last_modified_by"
+                                 baseTableName="tasks"
+                                 constraintName="fk_tasks_last_modified_by"
+                                 referencedColumnNames="id"
+                                 referencedTableName="users"/>
 
     </changeSet>
 
