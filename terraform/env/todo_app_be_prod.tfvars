@@ -9,6 +9,8 @@ tags = {
   Environment = "Prod"
 }
 
+spring_profile = "prod"
+
 apigw_service_name = "todo_app_api"
 
 api_cpu          = 256

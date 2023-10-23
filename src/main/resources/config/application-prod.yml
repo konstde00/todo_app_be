@@ -97,6 +97,17 @@ jhipster:
       # server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
       # cluster: true
   security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 116154229086-6i9qgcthsq1bbl2f5pbcfgejek6bbdul.apps.googleusercontent.com
+            client-secret: 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
+            scope: openid,profile,email
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
     authentication:
       jwt:
         # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)

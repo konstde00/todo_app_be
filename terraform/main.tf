@@ -42,11 +42,9 @@ module "todo_app_api_service" {
   tags             = var.tags
 
   vpc_id = aws_vpc.main_vpc.id
-  provide_external_lb = true
+#  provide_external_lb = true
   security_groups_override = [
     aws_security_group.api_sg.id
-    #    data.terraform_remote_state.shared_network.outputs.vpc_internal_only_security_group_id,
-    #    data.aws_ssm_parameter.app_cache_cluster_security_group_id.value
   ]
 
   cluster_id = aws_ecs_cluster.todo_app_be_cluster.id
