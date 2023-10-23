@@ -69,8 +69,8 @@ module "todo_app_api_service" {
 
   task_role_arn = aws_iam_role.todo-app-api-role.arn
   execution_role = aws_iam_role.todo-app-api-execution-role.arn
-  vpc_external_subnet_ids = [aws_subnet.public_subnet1.id]
-  vpc_internal_subnet_ids = [aws_subnet.public_subnet1.id]
+  vpc_external_subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id]
+  vpc_internal_subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id]
 }
 
 resource "aws_security_group" "api_sg" {
