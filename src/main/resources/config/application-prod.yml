@@ -127,3 +127,21 @@ jhipster:
 # ===================================================================
 
 # application:
+
+s3:
+  access-key: ${AWS_ACCESS_KEY:test}
+  secret-key: ${AWS_SECRET_KEY:test}
+  service-endpoint: s3.us-east-1.amazonaws.com
+  signing-region: us-east-1
+  bucket-name: ${BUCKET_NAME:todo-app-user-attachments}
+  folders:
+    avatars: avatars
+
+aws:
+  region: us-east-1
+  s3:
+    bucket: ${BUCKET_NAME:todo-app-user-attachments}
+    endpoint: s3.us-east-1.amazonaws.com
+    folders:
+      avatars: avatars
+      films: films
