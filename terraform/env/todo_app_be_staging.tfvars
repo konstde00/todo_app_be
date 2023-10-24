@@ -1,12 +1,12 @@
-environment_name  = "prod"
-spring_profile    = "prod"
+environment_name  = "staging"
+spring_profile    = "dev"
 api_desired_count = 1
 
 apigw_authorizer_id = ""
 
 tags = {
-  Budget      = "Production"
-  Environment = "Prod"
+  Budget      = "Staging"
+  Environment = "staging"
 }
 
 apigw_service_name = "todo_app_api"

@@ -3,8 +3,8 @@ resource "aws_rds_cluster" "todo_app_db_cluster" {
   engine             = "aurora-mysql"
   engine_mode        = "provisioned"
   database_name      = "todo_app_db"
-  master_username    = "todo_app"
-  master_password    = "must_be_eight_characters"
+  master_username    = data.aws_secretsmanager_secret_version.rds_db_user_latest_version.secret_string
+  master_password    = data.aws_secretsmanager_secret_version.rds_db_password_latest_version.secret_string
 
   vpc_security_group_ids  = [aws_security_group.aurora_sg.id]
   preferred_backup_window = "07:00-09:00"

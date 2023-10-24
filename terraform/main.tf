@@ -42,7 +42,6 @@ module "todo_app_api_service" {
   tags             = var.tags
 
   vpc_id = aws_vpc.main_vpc.id
-#  provide_external_lb = true
   security_groups_override = [
     aws_security_group.api_sg.id
   ]
@@ -58,11 +57,14 @@ module "todo_app_api_service" {
   health_check_timeout              = 25
 
   environment_variables = [
+    { name: "JAVA_OPTS", value: ""},
     { name : "MYSQL_URL", value: "jdbc:mysql://${aws_rds_cluster.todo_app_db_cluster.endpoint}/todo_app_db" },
-    { name : "MYSQL_USER", value: "todo_app" },
-    { name : "MYSQL_PASSWORD", value: "must_be_eight_characters" },
+    { name : "MYSQL_USER", value: data.aws_secretsmanager_secret_version.rds_db_user_latest_version.secret_string },
+    { name : "MYSQL_PASSWORD", value: data.aws_secretsmanager_secret_version.rds_db_password_latest_version.secret_string },
     { name : "S3_BUCKET_NAME", value : aws_s3_bucket.todo_app_user_attachments.bucket },
-    { name : "REDIS_SERVER", value : "redis://${module.redis.endpoint}:6379" }
+    { name : "REDIS_SERVER", value : "redis://${module.redis.endpoint}:6379" },
+    { name : "EMAIL_VERIFICATION_QUEUE", value : module.email-verification-sqs.queue-id },
+    { name : "PASSWORD_RESET_QUEUE", value : module.password-reset-sqs.queue-id }
   ]
 
   task_role_arn = aws_iam_role.todo-app-api-role.arn

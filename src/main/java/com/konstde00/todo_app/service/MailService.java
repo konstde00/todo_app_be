@@ -1,12 +1,17 @@
 package com.konstde00.todo_app.service;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.model.*;
 import com.konstde00.todo_app.domain.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,37 +22,39 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import tech.jhipster.config.JHipsterProperties;
 
-/**
- * Service for sending emails.
- *
- * <p>We use the {@link Async} annotation to send emails asynchronously.
- */
+@Slf4j
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MailService {
-
-  private final Logger log = LoggerFactory.getLogger(MailService.class);
 
   private static final String USER = "user";
 
   private static final String BASE_URL = "baseUrl";
 
-  private final JHipsterProperties jHipsterProperties;
+  JHipsterProperties jHipsterProperties;
 
-  private final JavaMailSender javaMailSender;
+  JavaMailSender javaMailSender;
 
-  private final MessageSource messageSource;
+  MessageSource messageSource;
 
-  private final SpringTemplateEngine templateEngine;
+  SpringTemplateEngine templateEngine;
+
+  String fromEmailAddress;
+  AmazonSimpleEmailService sesClient;
 
   public MailService(
       JHipsterProperties jHipsterProperties,
       JavaMailSender javaMailSender,
       MessageSource messageSource,
-      SpringTemplateEngine templateEngine) {
-    this.jHipsterProperties = jHipsterProperties;
-    this.javaMailSender = javaMailSender;
+      SpringTemplateEngine templateEngine,
+      AmazonSimpleEmailService sesClient,
+      @Value("${email-sender-address}") String fromEmailAddress) {
+    this.sesClient = sesClient;
     this.messageSource = messageSource;
     this.templateEngine = templateEngine;
+    this.javaMailSender = javaMailSender;
+    this.fromEmailAddress = fromEmailAddress;
+    this.jHipsterProperties = jHipsterProperties;
   }
 
   @Async
@@ -70,7 +77,21 @@ public class MailService {
       message.setFrom(jHipsterProperties.getMail().getFrom());
       message.setSubject(subject);
       message.setText(content, isHtml);
-      javaMailSender.send(mimeMessage);
+      final SendEmailRequest request = createSendEmailRequest(List.of(to), subject, content);
+
+      try {
+        sesClient.sendEmail(request);
+      } catch (Exception e) {
+
+        log.error(
+            "Failed to send email, subject {}, message {}, toAddresses: {}",
+            subject,
+            content,
+            to,
+            e);
+
+        throw e;
+      }
       log.debug("Sent email to User '{}'", to);
     } catch (MailException | MessagingException e) {
       log.warn("Email could not be sent to user '{}'", to, e);
@@ -90,6 +111,23 @@ public class MailService {
     String content = templateEngine.process(templateName, context);
     String subject = messageSource.getMessage(titleKey, null, locale);
     sendEmail(user.getEmail(), subject, content, false, true);
+
+    final SendEmailRequest request =
+        createSendEmailRequest(List.of(user.getEmail()), subject, content);
+
+    try {
+      sesClient.sendEmail(request);
+    } catch (Exception e) {
+
+      log.error(
+          "Failed to send email, subject {}, message {}, toAddresses: {}",
+          subject,
+          content,
+          user.getEmail(),
+          e);
+
+      throw e;
+    }
   }
 
   @Async
@@ -108,5 +146,16 @@ public class MailService {
   public void sendPasswordResetMail(User user) {
     log.debug("Sending password reset email to '{}'", user.getEmail());
     sendEmailFromTemplate(user, "mail/passwordResetEmail", "email.reset.title");
+  }
+
+  protected SendEmailRequest createSendEmailRequest(
+      List<String> toAddresses, String subject, String content) {
+    return new SendEmailRequest()
+        .withDestination(new Destination().withToAddresses(toAddresses))
+        .withMessage(
+            new Message()
+                .withBody(new Body().withText(new Content().withCharset("UTF-8").withData(content)))
+                .withSubject(new Content().withCharset("UTF-8").withData(subject)))
+        .withSource(fromEmailAddress);
   }
 }

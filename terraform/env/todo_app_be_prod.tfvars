@@ -6,7 +6,7 @@ apigw_authorizer_id = ""
 
 tags = {
   Budget      = "Production"
-  Environment = "Prod"
+  Environment = "prod"
 }
 
 apigw_service_name = "todo_app_api"

@@ -83,8 +83,6 @@ spring:
     cache: false
 
 s3:
-  access-key: ${AWS_ACCESS_KEY:test}
-  secret-key: ${AWS_SECRET_KEY:test}
   service-endpoint: s3.us-east-1.amazonaws.com
   signing-region: us-east-1
   bucket-name: ${BUCKET_NAME:todo-app-user-attachments}
@@ -92,6 +90,8 @@ s3:
     avatars: avatars
 
 aws:
+  access-key: ${AWS_ACCESS_KEY:test}
+  secret-key: ${AWS_SECRET_KEY:test}
   region: us-east-1
   s3:
     bucket: ${BUCKET_NAME:todo-app-user-attachments}
@@ -151,13 +151,5 @@ jhipster:
       host: localhost
       port: 5000
       ring-buffer-size: 512
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
-# application:
+email-sender-address: konstde00@gmail.com

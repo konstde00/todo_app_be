@@ -18,10 +18,10 @@ import org.springframework.context.annotation.Primary;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class S3Config {
 
-  @Value("${s3.access-key}")
+  @Value("${aws.access-key}")
   String accessKey;
 
-  @Value("${s3.secret-key}")
+  @Value("${aws.secret-key}")
   String secretKey;
 
   @Value("${s3.service-endpoint}")

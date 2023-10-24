@@ -198,8 +198,8 @@ dependencies {
     implementation group: 'org.mapstruct', name: 'mapstruct', version: mapstructVersion
     annotationProcessor group: 'org.mapstruct', name: 'mapstruct-processor', version: mapstructVersion
 
-//    implementation 'com.amazonaws:aws-java-sdk:1.2.1'
-//    implementation 'com.amazonaws.auth:aws-java-sdk:1.11.434'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-ses', version: '1.11.373'
+
     implementation 'org.springframework.cloud:spring-cloud-aws-autoconfigure:2.2.5.RELEASE'
     // Use ", version: jhipsterDependenciesVersion, changing: true" if you want
     // to use a SNAPSHOT release instead of a stable release
