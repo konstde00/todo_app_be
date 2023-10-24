@@ -91,9 +91,10 @@ resource "aws_lb_listener" "ext_lb_to_tg_https" {
 
   load_balancer_arn = aws_lb.ext_load_balancer["default"].arn
   port              = 443
-  protocol          = "HTTPS"
-  certificate_arn   = var.certificate_arn
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  protocol          = "HTTP"
+#  protocol          = "HTTPS"
+#  certificate_arn   = var.certificate_arn
+#  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
 
   tags = local.ecr_service_tags
 

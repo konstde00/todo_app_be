@@ -46,6 +46,11 @@ module "todo_app_api_service" {
     aws_security_group.api_sg.id
   ]
 
+  provide_external_lb = true
+  external_lb_security_group_ids = [
+    aws_security_group.api_sg.id
+  ]
+
   cluster_id = aws_ecs_cluster.todo_app_be_cluster.id
   container_port                    = 8080
   service_name                      = "todo-app-api"
@@ -57,7 +62,7 @@ module "todo_app_api_service" {
   health_check_timeout              = 25
 
   environment_variables = [
-    { name: "JAVA_OPTS", value: ""},
+    { name : "JAVA_OPTS", value: ""},
     { name : "MYSQL_URL", value: "jdbc:mysql://${aws_rds_cluster.todo_app_db_cluster.endpoint}/todo_app_db" },
     { name : "MYSQL_USER", value: data.aws_secretsmanager_secret_version.rds_db_user_latest_version.secret_string },
     { name : "MYSQL_PASSWORD", value: data.aws_secretsmanager_secret_version.rds_db_password_latest_version.secret_string },

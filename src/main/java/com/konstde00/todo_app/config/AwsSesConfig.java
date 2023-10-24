@@ -34,7 +34,7 @@ public class AwsSesConfig {
         .withCredentials(
             new AWSStaticCredentialsProvider(
                 new com.amazonaws.auth.BasicAWSCredentials(accessKey, secretKey)))
-        .withRegion(Regions.EU_CENTRAL_1)
+        .withRegion(Regions.US_EAST_1)
         .build();
   }
 }

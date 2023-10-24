@@ -8,6 +8,7 @@ import com.konstde00.todo_app.service.UserService;
 import com.konstde00.todo_app.service.dto.ManagedUserVM;
 import com.konstde00.todo_app.service.dto.PasswordChangeDTO;
 import com.konstde00.todo_app.service.dto.UserProfileDto;
+import com.konstde00.todo_app.service.exception.BadRequestException;
 import com.konstde00.todo_app.service.mapper.UserMapper;
 import com.konstde00.todo_app.web.rest.errors.*;
 import com.konstde00.todo_app.web.rest.vm.KeyAndPasswordVM;
@@ -170,7 +171,7 @@ public class AccountController {
         userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
     if (!user.isPresent()) {
-      throw new AccountResourceException("No user was found for this reset key");
+      throw new BadRequestException("No user was found for this reset key");
     }
   }
 

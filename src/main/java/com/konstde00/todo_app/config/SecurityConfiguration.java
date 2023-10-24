@@ -63,6 +63,9 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc)
       throws Exception {
+
+    log.info("SecurityConfiguration.filterChain() invoked");
+
     http.cors(withDefaults())
         .csrf(csrf -> csrf.disable())
         .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
@@ -105,7 +108,6 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/api/account/reset-password/finish"))
                     .permitAll()
                     .requestMatchers(mvc.pattern("/api/**"))
-                    //                    .hasAuthority(AuthoritiesConstants.USER)
                     .permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**"))
                     .hasAuthority(AuthoritiesConstants.ADMIN)
