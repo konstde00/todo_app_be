@@ -2,6 +2,7 @@ package com.konstde00.todo_app.config;
 
 import static java.net.URLDecoder.decode;
 
+import com.google.common.collect.ImmutableList;
 import jakarta.servlet.*;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.server.*;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import tech.jhipster.config.JHipsterProperties;
 
 /** Configuration of web application with Servlet 3.0 APIs. */
@@ -72,19 +78,20 @@ public class WebConfigurer
     return extractedPath.substring(0, extractionEndIndex);
   }
 
-  //  @Bean
-  //  public CorsFilter corsFilter() {
-  //    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-  //    CorsConfiguration config = jHipsterProperties.getCors();
-  //    if (!CollectionUtils.isEmpty(config.getAllowedOrigins())
-  //        || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns())) {
-  //      log.debug("Registering CORS filter");
-  //      source.registerCorsConfiguration("/api/**", config);
-  //      source.registerCorsConfiguration("/management/**", config);
-  //      source.registerCorsConfiguration("/v3/api-docs", config);
-  //      source.registerCorsConfiguration("/swagger-ui/**", config);
-  //      source.registerCorsConfiguration("/actuator/**", config);
-  //    }
-  //    return new CorsFilter(source);
-  //  }
+  @Bean
+  public CorsFilter corsFilter() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    CorsConfiguration config = jHipsterProperties.getCors();
+    config.setAllowedOrigins(ImmutableList.of("*"));
+    config.setAllowedMethods(ImmutableList.of("HEAD",
+            "GET", "POST", "PUT", "DELETE", "PATCH"));
+    // setAllowCredentials(true) is important, otherwise:
+    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
+    config.setAllowCredentials(true);
+    // setAllowedHeaders is important! Without it, OPTIONS preflight request
+    // will fail with 403 Invalid CORS request
+    config.setAllowedHeaders(ImmutableList.of("Cache-Control", "Content-Type"));
+    source.registerCorsConfiguration("/**", config);
+    return new CorsFilter(source);
+  }
 }
