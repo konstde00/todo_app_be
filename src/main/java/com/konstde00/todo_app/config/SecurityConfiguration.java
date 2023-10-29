@@ -3,6 +3,7 @@ package com.konstde00.todo_app.config;
 import static com.konstde00.todo_app.security.SecurityUtils.JWT_ALGORITHM;
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import com.google.common.collect.ImmutableList;
 import com.konstde00.todo_app.security.*;
 import com.konstde00.todo_app.security.oauth2.AudienceValidator;
 import com.konstde00.todo_app.security.oauth2.CustomClaimConverter;
@@ -36,6 +37,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import tech.jhipster.config.JHipsterProperties;
 
@@ -65,8 +69,9 @@ public class SecurityConfiguration {
   public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc)
       throws Exception {
 
-    http.cors(withDefaults())
-        .csrf(AbstractHttpConfigurer::disable)
+    http.csrf(AbstractHttpConfigurer::disable)
+        .cors()
+        .and()
         .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
         .headers(
             headers ->
@@ -136,6 +141,24 @@ public class SecurityConfiguration {
             oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
         .oauth2Client();
     return http.build();
+  }
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    org.springframework.web.cors.UrlBasedCorsConfigurationSource source =
+        new UrlBasedCorsConfigurationSource();
+    CorsConfiguration config = jHipsterProperties.getCors();
+    config.setAllowedOrigins(ImmutableList.of("*"));
+    config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
+    // setAllowCredentials(true) is important, otherwise:
+    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
+    // wildcard '*' when the request's credentials mode is 'include'.
+    config.setAllowCredentials(true);
+    // setAllowedHeaders is important! Without it, OPTIONS preflight request
+    // will fail with 403 Invalid CORS request
+    config.setAllowedHeaders(ImmutableList.of("Cache-Control", "Content-Type"));
+    source.registerCorsConfiguration("/**", config);
+    return source;
   }
 
   Converter<Jwt, AbstractAuthenticationToken> authenticationConverter() {

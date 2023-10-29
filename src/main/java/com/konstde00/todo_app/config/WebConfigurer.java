@@ -15,7 +15,6 @@ import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerF
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -83,10 +82,10 @@ public class WebConfigurer
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     CorsConfiguration config = jHipsterProperties.getCors();
     config.setAllowedOrigins(ImmutableList.of("*"));
-    config.setAllowedMethods(ImmutableList.of("HEAD",
-            "GET", "POST", "PUT", "DELETE", "PATCH"));
+    config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
-    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
+    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
+    // wildcard '*' when the request's credentials mode is 'include'.
     config.setAllowCredentials(true);
     // setAllowedHeaders is important! Without it, OPTIONS preflight request
     // will fail with 403 Invalid CORS request
