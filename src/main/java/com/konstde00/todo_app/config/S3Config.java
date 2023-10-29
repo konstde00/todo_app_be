@@ -34,12 +34,6 @@ public class S3Config {
   @Primary
   public AmazonS3 getCredentials() {
 
-    log.info("getCredentials invoked");
-    log.info("accessKey: {}", accessKey);
-    log.info("secretKey: {}", secretKey);
-    log.info("serviceEndpoint: {}", serviceEndpoint);
-    log.info("signingRegion: {}", signingRegion);
-
     BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
     return AmazonS3ClientBuilder.standard()

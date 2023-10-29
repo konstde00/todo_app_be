@@ -3,6 +3,7 @@ package com.konstde00.todo_app.service.mapper;
 import com.konstde00.todo_app.domain.Authority;
 import com.konstde00.todo_app.domain.User;
 import com.konstde00.todo_app.domain.enums.FeatureFlag;
+import com.konstde00.todo_app.service.FileService;
 import com.konstde00.todo_app.service.dto.UserDTO;
 import com.konstde00.todo_app.service.dto.UserProfileDto;
 import java.util.*;
@@ -11,14 +12,14 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Mapper(componentModel = "spring")
 public abstract class UserMapper {
 
-  public static UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+  @Autowired protected FileService fileService;
 
   public List<UserDTO> usersToUserDTOs(List<User> users) {
     return users.stream().filter(Objects::nonNull).map(this::userToUserDTO).toList();
@@ -26,17 +27,6 @@ public abstract class UserMapper {
 
   public UserDTO userToUserDTO(User user) {
     return new UserDTO(user);
-  }
-
-  public List<UserProfileDto> usersToAdminUserDTOs(List<User> users) {
-    return users.stream()
-        .filter(Objects::nonNull)
-        .map(UserMapper.INSTANCE::toUserProfileDto)
-        .toList();
-  }
-
-  public List<User> userDTOsToUsers(List<UserProfileDto> userDTOs) {
-    return userDTOs.stream().filter(Objects::nonNull).map(this::userDTOToUser).toList();
   }
 
   public User userDTOToUser(UserProfileDto userDTO) {
@@ -49,7 +39,6 @@ public abstract class UserMapper {
       user.setFirstName(userDTO.getFirstName());
       user.setLastName(userDTO.getLastName());
       user.setEmail(userDTO.getEmail());
-      user.setImageUrl(userDTO.getImageUrl());
       user.setActivated(userDTO.isActivated());
       user.setLangKey(userDTO.getLangKey());
       Set<Authority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
@@ -129,6 +118,7 @@ public abstract class UserMapper {
 
   @Mapping(target = "authorities", qualifiedByName = "mapAuthorities")
   @Mapping(target = "featureFlags", qualifiedByName = "mapFeatureFlags")
+  @Mapping(target = "imageUrl", expression = "java(fileService.getUrl(user.getImage()))")
   public abstract UserProfileDto toUserProfileDto(User user);
 
   @Named("mapAuthorities")

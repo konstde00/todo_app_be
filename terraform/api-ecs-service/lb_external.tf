@@ -71,14 +71,19 @@ resource "aws_lb_listener" "ext_lb_to_tg" {
 
   tags = local.ecr_service_tags
 
-  default_action {
-    type = "redirect"
+#  default_action {
+#    type = "redirect"
+#
+#    redirect {
+#      status_code = "HTTP_301"
+#      protocol    = "HTTPS"
+#      port        = "443"
+#    }
+#  }
 
-    redirect {
-      status_code = "HTTP_301"
-      protocol    = "HTTPS"
-      port        = "443"
-    }
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.ext_target_group["default"].arn
   }
 
   depends_on = [

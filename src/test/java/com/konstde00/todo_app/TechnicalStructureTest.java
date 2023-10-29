@@ -9,7 +9,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
-@AnalyzeClasses(packagesOf = TodoAppBeApp.class, importOptions = DoNotIncludeTests.class)
+@AnalyzeClasses(packagesOf = TodoAppBe.class, importOptions = DoNotIncludeTests.class)
 class TechnicalStructureTest {
 
   // prettier-ignore
@@ -41,7 +41,7 @@ class TechnicalStructureTest {
           .mayOnlyBeAccessedByLayers("Service", "Security", "Web", "Config")
           .whereLayer("Domain")
           .mayOnlyBeAccessedByLayers("Persistence", "Service", "Security", "Web", "Config")
-          .ignoreDependency(belongToAnyOf(TodoAppBeApp.class), alwaysTrue())
+          .ignoreDependency(belongToAnyOf(TodoAppBe.class), alwaysTrue())
           .ignoreDependency(
               alwaysTrue(),
               belongToAnyOf(

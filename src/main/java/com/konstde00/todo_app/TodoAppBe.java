@@ -25,13 +25,13 @@ import tech.jhipster.config.JHipsterConstants;
 @EnableJpaRepositories
 @EnableTransactionManagement
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
-public class TodoAppBeApp {
+public class TodoAppBe {
 
-  private static final Logger log = LoggerFactory.getLogger(TodoAppBeApp.class);
+  private static final Logger log = LoggerFactory.getLogger(TodoAppBe.class);
 
   private final Environment env;
 
-  public TodoAppBeApp(Environment env) {
+  public TodoAppBe(Environment env) {
     this.env = env;
   }
 
@@ -67,7 +67,7 @@ public class TodoAppBeApp {
    * @param args the command line arguments.
    */
   public static void main(String[] args) {
-    SpringApplication app = new SpringApplication(TodoAppBeApp.class);
+    SpringApplication app = new SpringApplication(TodoAppBe.class);
     DefaultProfileUtil.addDefaultProfile(app);
     Environment env = app.run(args).getEnvironment();
     logApplicationStartup(env);

@@ -4,9 +4,9 @@ import com.konstde00.todo_app.config.Constants;
 import com.konstde00.todo_app.domain.User;
 import com.konstde00.todo_app.repository.UserRepository;
 import com.konstde00.todo_app.security.AuthoritiesConstants;
-import com.konstde00.todo_app.service.MailService;
 import com.konstde00.todo_app.service.UserService;
 import com.konstde00.todo_app.service.dto.PaginatedUsersResponseDto;
+import com.konstde00.todo_app.service.dto.UploadFileResponseDto;
 import com.konstde00.todo_app.service.dto.UserProfileDto;
 import com.konstde00.todo_app.service.exception.BadRequestException;
 import com.konstde00.todo_app.service.mapper.UserMapper;
@@ -58,7 +58,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * <p>Another option would be to have a specific JPA entity graph to handle this case.
  */
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api")
 public class UserController {
 
   private final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -66,31 +66,38 @@ public class UserController {
   @Value("${jhipster.clientApp.name}")
   private String applicationName;
 
+  private final UserMapper userMapper;
   private final UserService userService;
-
   private final UserRepository userRepository;
 
-  private final MailService mailService;
-
   public UserController(
-      UserService userService, UserRepository userRepository, MailService mailService) {
+      UserMapper userMapper, UserService userService, UserRepository userRepository) {
+    this.userMapper = userMapper;
     this.userService = userService;
     this.userRepository = userRepository;
-    this.mailService = mailService;
   }
 
-  @GetMapping("/users")
+  @GetMapping("/admin/users")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
   public ResponseEntity<PaginatedUsersResponseDto> getAllUsers(
       @RequestParam(name = "search", required = false, defaultValue = StringUtils.EMPTY)
           String search,
       @RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
-      @RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize) {
+      @RequestParam(name = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
 
     PaginatedUsersResponseDto responseDto =
         userService.getAllManagedUsers(search, pageNumber, pageSize);
 
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
+  }
+
+  @GetMapping("/admin/users/{id}")
+  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+  public ResponseEntity<UserProfileDto> getUserById(@PathVariable String id) {
+
+    UserProfileDto profile = userService.getProfileById(id);
+
+    return new ResponseEntity<>(profile, HttpStatus.OK);
   }
 
   /**
@@ -106,7 +113,7 @@ public class UserController {
    * @throws BadRequestAlertException {@code 400 (Bad Request)} if the login or email is already in
    *     use.
    */
-  @PostMapping("/users")
+  @PostMapping("/admin/users")
   public ResponseEntity<UserProfileDto> createUser(@Valid @RequestBody UserProfileDto userDTO)
       throws URISyntaxException {
     log.debug("REST request to save User : {}", userDTO);
@@ -115,12 +122,12 @@ public class UserController {
       throw new BadRequestAlertException(
           "A new user cannot already have an ID", "userManagement", "idexists");
       // Lowercase the user login before comparing with database
-    } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
-      throw new BadRequestException("Login already used");
+    } else if (userRepository.findOneByEmail(userDTO.getEmail()).isPresent()) {
+      throw new BadRequestException("Email has been already used");
     } else {
       User createdUser = userService.createUser(userDTO);
 
-      UserProfileDto responseDto = UserMapper.INSTANCE.toUserProfileDto(createdUser);
+      UserProfileDto responseDto = userMapper.toUserProfileDto(createdUser);
       responseDto.setToken(userDTO.getToken());
       responseDto.setToken(userService.createToken(createdUser));
 
@@ -137,7 +144,7 @@ public class UserController {
    * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
    * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
    */
-  @PutMapping("/users")
+  @PutMapping("/admin/users")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
   public ResponseEntity<UserProfileDto> updateUser(@Valid @RequestBody UserProfileDto userDTO) {
     log.debug("REST request to update User : {}", userDTO);
@@ -159,37 +166,19 @@ public class UserController {
             userDTO.getLogin()));
   }
 
-  /**
-   * {@code GET /admin/users/:login} : get the "login" user.
-   *
-   * @param login the login of the user to find.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "login" user,
-   *     or with status {@code 404 (Not Found)}.
-   */
-  @GetMapping("/users/{login}")
-  @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-  public ResponseEntity<UserProfileDto> getUser(
-      @PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
-    log.debug("REST request to get User : {}", login);
-    return ResponseUtil.wrapOrNotFound(
-        userService
-            .getUserWithAuthoritiesByLogin(login)
-            .map(UserMapper.INSTANCE::toUserProfileDto));
-  }
-
-  @PatchMapping("/v1/feature-flag")
+  @PatchMapping("/admin/v1/feature-flag")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
   public ResponseEntity<?> updateFeatureFlag(
       @RequestParam String userId,
       @RequestParam Integer featureFlagId,
       @RequestParam Boolean isSelected) {
 
-    userService.updateFeatureFlag(userId, featureFlagId, isSelected);
+    UserProfileDto profile = userService.updateFeatureFlag(userId, featureFlagId, isSelected);
 
-    return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    return new ResponseEntity<>(profile, HttpStatus.ACCEPTED);
   }
 
-  @PatchMapping("/v1")
+  @PatchMapping("/users/v1")
   @Operation(summary = "Update user")
   public ResponseEntity<?> update(@RequestParam(required = false) String name) {
 
@@ -198,13 +187,14 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/v1/upload")
+  @PostMapping("users/v1/upload")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.USER + "\")")
-  public ResponseEntity<?> uploadAvatar(@RequestParam("photo") MultipartFile photo) {
+  public ResponseEntity<UploadFileResponseDto> uploadAvatar(
+      @RequestParam("photo") MultipartFile photo) {
 
-    userService.uploadAvatar(photo);
+    String imageUrl = userService.uploadAvatar(photo);
 
-    return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    return new ResponseEntity<>(new UploadFileResponseDto(imageUrl), HttpStatus.OK);
   }
 
   /**
@@ -213,7 +203,7 @@ public class UserController {
    * @param login the login of the user to delete.
    * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
    */
-  @DeleteMapping("/users/{login}")
+  @DeleteMapping("/admin/users/{login}")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
   public ResponseEntity<Void> deleteUser(
       @PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {

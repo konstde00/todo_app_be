@@ -14,14 +14,14 @@ import com.konstde00.todo_app.web.rest.errors.*;
 import com.konstde00.todo_app.web.rest.vm.KeyAndPasswordVM;
 import jakarta.validation.Valid;
 import java.util.*;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 /** REST controller for managing the current user's account. */
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api")
 public class AccountController {
 
@@ -32,20 +32,10 @@ public class AccountController {
     }
   }
 
-  private final Logger log = LoggerFactory.getLogger(AccountController.class);
-
-  private final UserRepository userRepository;
-
-  private final UserService userService;
-
+  private final UserMapper userMapper;
   private final MailService mailService;
-
-  public AccountController(
-      UserRepository userRepository, UserService userService, MailService mailService) {
-    this.userRepository = userRepository;
-    this.userService = userService;
-    this.mailService = mailService;
-  }
+  private final UserService userService;
+  private final UserRepository userRepository;
 
   /**
    * {@code POST /register} : register the user.
@@ -89,7 +79,7 @@ public class AccountController {
   public UserProfileDto getAccount() {
     return userService
         .getUserWithAuthorities()
-        .map(UserMapper.INSTANCE::toUserProfileDto)
+        .map(userMapper::toUserProfileDto)
         .orElseThrow(() -> new AccountResourceException("User could not be found"));
   }
 
@@ -115,11 +105,7 @@ public class AccountController {
       throw new AccountResourceException("User could not be found");
     }
     userService.updateUser(
-        userDTO.getFirstName(),
-        userDTO.getLastName(),
-        userDTO.getEmail(),
-        userDTO.getLangKey(),
-        userDTO.getImageUrl());
+        userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(), userDTO.getLangKey());
   }
 
   /**
@@ -145,12 +131,9 @@ public class AccountController {
   @PostMapping(path = "/account/reset-password/init")
   public void requestPasswordReset(@RequestParam String mail) {
     Optional<User> user = userService.requestPasswordReset(mail);
-    if (user.isPresent()) {
-      mailService.sendPasswordResetMail(user.orElseThrow());
-    } else {
-      // Pretend the request has been successful to prevent checking which emails really exist
-      // but log that an invalid attempt has been made
-      log.warn("Password reset requested for non existing mail");
+
+    if (user.isEmpty()) {
+      throw new BadRequestException("Email address not registered");
     }
   }
 

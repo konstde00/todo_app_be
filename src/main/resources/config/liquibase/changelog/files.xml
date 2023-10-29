@@ -8,21 +8,31 @@
 
         <createTable tableName="files">
 
-            <column name="id" type="bigint">
+            <column name="id" type="bigint" autoIncrement="true" >
                 <constraints primaryKey="true" nullable="false" />
             </column>
 
-            <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false" />
-            </column>
+            <column name="origin" type="VARCHAR(100)"/>
 
-            <column name="url" type="VARCHAR(255)">
-                <constraints nullable="false" />
-            </column>
+            <column name="url" type="VARCHAR(100)"/>
+
+            <column name="bucket_name" type="VARCHAR(63)"/>
+
+            <column name="file_key" type="VARCHAR(255)"/>
+
+            <column name="content_type" type="VARCHAR(129)"/>
+
+            <column name="metadata" type="JSON"/>
 
             <column name="created_at" type="timestamp" />
 
         </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="file_id"
+                                 baseTableName="users"
+                                 constraintName="fk_users_files"
+                                 referencedColumnNames="id"
+                                 referencedTableName="files"/>
 
     </changeSet>
 

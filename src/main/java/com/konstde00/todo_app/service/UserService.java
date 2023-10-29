@@ -5,6 +5,7 @@ import static com.konstde00.todo_app.security.SecurityUtils.JWT_ALGORITHM;
 
 import com.konstde00.todo_app.config.Constants;
 import com.konstde00.todo_app.domain.Authority;
+import com.konstde00.todo_app.domain.File;
 import com.konstde00.todo_app.domain.User;
 import com.konstde00.todo_app.domain.enums.FeatureFlag;
 import com.konstde00.todo_app.domain.enums.UserRegistrationType;
@@ -22,6 +23,7 @@ import com.konstde00.todo_app.service.exception.EmailAlreadyUsedException;
 import com.konstde00.todo_app.service.exception.InvalidPasswordException;
 import com.konstde00.todo_app.service.exception.UsernameAlreadyUsedException;
 import com.konstde00.todo_app.service.mapper.UserMapper;
+import com.konstde00.todo_app.service.password_reset.PasswordResetProducer;
 import com.mysql.cj.exceptions.WrongArgumentException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -57,11 +59,13 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   private final AuthorityRepository authorityRepository;
+  private final PasswordResetProducer passwordResetProducer;
 
   private final CacheManager cacheManager;
   private final FileService fileService;
   private final JwtDecoder jwtDecoder;
   private final JwtEncoder jwtEncoder;
+  private final UserMapper userMapper;
 
   @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds:0}")
   private long tokenValidityInSeconds;
@@ -73,17 +77,21 @@ public class UserService {
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       AuthorityRepository authorityRepository,
+      PasswordResetProducer passwordResetProducer,
       CacheManager cacheManager,
       FileService fileService,
       JwtDecoder jwtDecoder,
-      JwtEncoder jwtEncoder) {
+      JwtEncoder jwtEncoder,
+      UserMapper userMapper) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.authorityRepository = authorityRepository;
+    this.passwordResetProducer = passwordResetProducer;
     this.cacheManager = cacheManager;
     this.fileService = fileService;
     this.jwtDecoder = jwtDecoder;
     this.jwtEncoder = jwtEncoder;
+    this.userMapper = userMapper;
   }
 
   public User getById(String id) {
@@ -94,6 +102,14 @@ public class UserService {
 
     return userRepository
         .findById(id)
+        .orElseThrow(() -> new BadRequestException("Not found a user with id " + id));
+  }
+
+  public UserProfileDto getProfileById(String id) {
+
+    return userRepository
+        .findById(id)
+        .map(userMapper::toUserProfileDto)
         .orElseThrow(() -> new BadRequestException("Not found a user with id " + id));
   }
 
@@ -146,6 +162,9 @@ public class UserService {
             user -> {
               user.setResetKey(RandomUtil.generateResetKey());
               user.setResetDate(Instant.now());
+              passwordResetProducer.sendPasswordResetRequest(
+                  new com.konstde00.todo_app.service.dto.PasswordResetMessage(
+                      user.getEmail(), user.getResetKey()));
               this.clearUserCaches(user);
               return user;
             });
@@ -181,7 +200,6 @@ public class UserService {
     if (userDTO.getEmail() != null) {
       newUser.setEmail(userDTO.getEmail().toLowerCase());
     }
-    newUser.setImageUrl(userDTO.getImageUrl());
     newUser.setLangKey(userDTO.getLangKey());
     // new user is not active
     newUser.setActivated(false);
@@ -209,13 +227,13 @@ public class UserService {
   public User createUser(UserProfileDto userDTO) {
     User user = new User();
     user.setId(UUID.randomUUID().toString());
-    user.setLogin(userDTO.getLogin().toLowerCase());
+    user.setLogin(
+        userDTO.getLogin() == null ? userDTO.getEmail() : userDTO.getLogin().toLowerCase());
     user.setFirstName(userDTO.getFirstName());
     user.setLastName(userDTO.getLastName());
     if (userDTO.getEmail() != null) {
       user.setEmail(userDTO.getEmail().toLowerCase());
     }
-    user.setImageUrl(userDTO.getImageUrl());
     if (userDTO.getLangKey() == null) {
       user.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
     } else {
@@ -238,7 +256,7 @@ public class UserService {
     User savedUser = userRepository.save(user);
     this.clearUserCaches(user);
     log.debug("Created Information for User: {}", user);
-    return user;
+    return savedUser;
   }
 
   /**
@@ -260,7 +278,6 @@ public class UserService {
               if (userDTO.getEmail() != null) {
                 user.setEmail(userDTO.getEmail().toLowerCase());
               }
-              user.setImageUrl(userDTO.getImageUrl());
               user.setActivated(userDTO.isActivated());
               user.setLangKey(userDTO.getLangKey());
               Set<Authority> managedAuthorities = user.getAuthorities();
@@ -275,7 +292,7 @@ public class UserService {
               log.debug("Changed Information for User: {}", user);
               return user;
             })
-        .map(UserMapper.INSTANCE::toUserProfileDto);
+        .map(userMapper::toUserProfileDto);
   }
 
   public void deleteUser(String login) {
@@ -296,10 +313,8 @@ public class UserService {
    * @param lastName last name of user.
    * @param email email id of user.
    * @param langKey language key.
-   * @param imageUrl image URL of user.
    */
-  public void updateUser(
-      String firstName, String lastName, String email, String langKey, String imageUrl) {
+  public void updateUser(String firstName, String lastName, String email, String langKey) {
     SecurityUtils.getCurrentUserLogin()
         .flatMap(userRepository::findOneByLogin)
         .ifPresent(
@@ -310,7 +325,6 @@ public class UserService {
                 user.setEmail(email.toLowerCase());
               }
               user.setLangKey(langKey);
-              user.setImageUrl(imageUrl);
               userRepository.save(user);
               this.clearUserCaches(user);
               log.debug("Changed Information for User: {}", user);
@@ -344,9 +358,7 @@ public class UserService {
     Page<User> page = userRepository.findAll(search, pageRequest);
 
     List<UserProfileDto> items =
-        page.getContent().stream()
-            .map(UserMapper.INSTANCE::toUserProfileDto)
-            .collect(Collectors.toList());
+        page.getContent().stream().map(userMapper::toUserProfileDto).collect(Collectors.toList());
 
     CommonIterableResponseMetadata metadata =
         new CommonIterableResponseMetadata()
@@ -364,6 +376,11 @@ public class UserService {
   @Transactional(readOnly = true)
   public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
     return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(UserDTO::new);
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<User> getUserWithAuthoritiesByEmail(String email) {
+    return userRepository.findOneWithAuthoritiesByEmail(email);
   }
 
   @Transactional(readOnly = true)
@@ -405,18 +422,15 @@ public class UserService {
             });
   }
 
-  public void uploadAvatar(MultipartFile photo) {
+  public String uploadAvatar(MultipartFile photo) {
 
     User currentUser = getCurrentUserWithAuthorities();
 
-    String imageUrl = fileService.updateUsersAvatar(currentUser.getId(), photo);
-
-    currentUser.setImageUrl(imageUrl);
-
-    userRepository.saveAndFlush(currentUser);
+    return fileService.updateUsersAvatar(currentUser, photo);
   }
 
-  public void updateFeatureFlag(String userId, Integer featureFlagId, Boolean isSelected) {
+  public UserProfileDto updateFeatureFlag(
+      String userId, Integer featureFlagId, Boolean isSelected) {
 
     User user = userRepository.findById(userId).orElseThrow();
 
@@ -426,12 +440,12 @@ public class UserService {
 
       user.getFeatureFlags().add(featureFlag);
 
-    } else {
+    } else if (!isSelected) {
 
       user.getFeatureFlags().remove(featureFlag);
     }
 
-    userRepository.saveAndFlush(user);
+    return userMapper.toUserProfileDto(userRepository.saveAndFlush(user));
   }
 
   /**
@@ -454,11 +468,21 @@ public class UserService {
       user.setAuthorities(Set.of(new Authority(AuthoritiesConstants.USER)));
     }
 
-    UserMapper.INSTANCE.toUserProfileDto(syncUserWithIdP(attributes, user));
+    saveAndFlush(user);
   }
 
-  private static User getUser(Map<String, Object> details) {
-    User user = new User();
+  private User getUser(Map<String, Object> details) {
+
+    String id =
+        Optional.ofNullable(details.get("uid"))
+            .map(String::valueOf)
+            .orElse(String.valueOf(details.get("sub")));
+
+    User user = userRepository.findById(id).orElseGet(() -> new User(id));
+
+    File file = fileService.saveAvatarFromIdp((String) details.get("picture"));
+    user.setImage(file);
+
     Boolean activated = Boolean.TRUE;
     String sub = String.valueOf(details.get("sub"));
     String username = null;
@@ -511,65 +535,7 @@ public class UserService {
       // set langKey to default if not specified by IdP
       user.setLangKey(Constants.DEFAULT_LANGUAGE);
     }
-    if (details.get("picture") != null) {
-      user.setImageUrl((String) details.get("picture"));
-    }
     user.setActivated(activated);
-    return user;
-  }
-
-  private User syncUserWithIdP(Map<String, Object> details, User user) {
-    // save authorities in to sync user roles/groups between IdP and JHipster's local database
-    Collection<String> dbAuthorities = getAuthorities();
-    Collection<String> userAuthorities =
-        user.getAuthorities().stream().map(Authority::getName).toList();
-    for (String authority : userAuthorities) {
-      if (!dbAuthorities.contains(authority)) {
-        log.debug("Saving authority '{}' in local database", authority);
-        Authority authorityToSave = new Authority();
-        authorityToSave.setName(authority);
-        authorityRepository.save(authorityToSave);
-      }
-    }
-    // save account in to sync users between IdP and JHipster's local database
-    Optional<User> existingUser = userRepository.findOneByLogin(user.getLogin());
-    if (existingUser.isPresent()) {
-      // if IdP sends last updated information, use it to determine if an update should happen
-      if (details.get("updated_at") != null) {
-        Instant dbModifiedDate = existingUser.orElseThrow().getLastModifiedDate();
-        Instant idpModifiedDate;
-        if (details.get("updated_at") instanceof Instant) {
-          idpModifiedDate = (Instant) details.get("updated_at");
-        } else {
-          idpModifiedDate = Instant.ofEpochSecond((Integer) details.get("updated_at"));
-        }
-        if (idpModifiedDate.isAfter(dbModifiedDate)) {
-          log.debug("Updating user '{}' in local database", user.getLogin());
-          updateUser(
-              user.getFirstName(),
-              user.getLastName(),
-              user.getEmail(),
-              user.getLangKey(),
-              user.getImageUrl());
-        }
-        // no last updated info, blindly update
-      } else {
-        log.debug("Updating user '{}' in local database", user.getLogin());
-        updateUser(
-            user.getFirstName(),
-            user.getLastName(),
-            user.getEmail(),
-            user.getLangKey(),
-            user.getImageUrl());
-      }
-    } else {
-      log.debug("Saving user '{}' in local database", user.getLogin());
-      user.setRegistrationType(UserRegistrationType.GOOGLE);
-      user.setAuthorities(Set.of(new Authority(AuthoritiesConstants.USER)));
-      user.setFeatureFlags(Set.of());
-      userRepository.save(user);
-      this.clearUserCaches(user);
-    }
     return user;
   }
 
@@ -618,6 +584,10 @@ public class UserService {
 
     JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
     return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
+  }
+
+  public User saveAndFlush(User user) {
+    return userRepository.saveAndFlush(user);
   }
 
   private void clearUserCaches(User user) {

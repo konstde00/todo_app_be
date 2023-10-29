@@ -124,12 +124,12 @@ public class MailService {
   }
 
   @Async
-  public void sendPasswordResetMail(User user) {
+  public void sendPasswordResetMail(String email, String token) {
 
     String subject = "Recovery code";
-    String message = "Your recovery code is " + user.getResetKey();
+    String message = "Your recovery code is " + token;
 
-    sendEmail(user.getEmail(), subject, message);
+    sendEmail(email, subject, message);
   }
 
   protected SendEmailRequest createSendEmailRequest(

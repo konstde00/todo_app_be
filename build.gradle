@@ -1,11 +1,13 @@
 buildscript {
     ext {
-        awsSdk = '1.11.849'
         awsSdkV2 = '2.17.96'
         lombokVersion = '1.18.22'
         streamExVersion = '0.7.3'
         mainClassName = "com.konstde00.todo_app.TodoAppBeApp"
         mapstructVersion = '1.5.3.Final'
+        springCloudAws="3.0.1"
+        springCloudAwsMessaging="2.4.4"
+        awsSdkVersion="2.20.79"
     }
 }
 
@@ -199,10 +201,8 @@ dependencies {
     annotationProcessor group: 'org.mapstruct', name: 'mapstruct-processor', version: mapstructVersion
 
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-ses', version: '1.11.373'
+    implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure:2.4.0'
 
-    implementation 'org.springframework.cloud:spring-cloud-aws-autoconfigure:2.2.5.RELEASE'
-    // Use ", version: jhipsterDependenciesVersion, changing: true" if you want
-    // to use a SNAPSHOT release instead of a stable release
     implementation "tech.jhipster:jhipster-framework"
     implementation "jakarta.annotation:jakarta.annotation-api"
     implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
@@ -237,7 +237,22 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-thymeleaf"
     implementation "org.springframework.boot:spring-boot-starter-web"
-//    implementation 'org.springframework.data:spring-data-elasticsearch:5.1.4'
+    implementation 'org.springframework:spring-messaging:6.0.13'
+
+    implementation 'javax.persistence:javax.persistence-api:2.2'
+
+    implementation "io.awspring.cloud:spring-cloud-aws-starter:$springCloudAws"
+    implementation "io.awspring.cloud:spring-cloud-aws-sqs:$springCloudAws"
+//    implementation "io.awspring.cloud:spring-cloud-aws-starter-s3:$springCloudAws"
+    implementation "io.awspring.cloud:spring-cloud-aws-messaging:$springCloudAwsMessaging"
+    implementation "software.amazon.awssdk:aws-sdk-java:$awsSdkVersion"
+    implementation "software.amazon.awssdk:sqs:$awsSdkVersion"
+
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.573'
+    implementation(platform("software.amazon.awssdk:bom:2.20.56"))
+
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.0.2'
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-test"
     testImplementation "org.springframework.security:spring-security-test"

@@ -15,20 +15,21 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+@Data
 @Entity
 @Cacheable
+@NoArgsConstructor
 @Table(name = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class User extends AbstractAuditingEntity<String> implements Serializable {
-
-  static final long serialVersionUID = 1L;
 
   @Id String id;
 
@@ -63,9 +64,9 @@ public class User extends AbstractAuditingEntity<String> implements Serializable
   @Column(name = "lang_key", length = 10)
   String langKey;
 
-  @Size(max = 256)
-  @Column(name = "image_url", length = 256)
-  String imageUrl;
+  @OneToOne
+  @JoinColumn(name = "file_id")
+  File image;
 
   @Size(max = 20)
   @Column(name = "activation_key", length = 20)
@@ -98,141 +99,7 @@ public class User extends AbstractAuditingEntity<String> implements Serializable
   @Column(table = "users", name = "feature_flags")
   Set<FeatureFlag> featureFlags = new HashSet<>();
 
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
+  public User(String id) {
     this.id = id;
-  }
-
-  public String getLogin() {
-    return login;
-  }
-
-  public void setLogin(String login) {
-    this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public String getFirstName() {
-    return firstName;
-  }
-
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
-
-  public String getLastName() {
-    return lastName;
-  }
-
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public String getImageUrl() {
-    return imageUrl;
-  }
-
-  public void setImageUrl(String imageUrl) {
-    this.imageUrl = imageUrl;
-  }
-
-  public boolean isActivated() {
-    return activated;
-  }
-
-  public void setActivated(boolean activated) {
-    this.activated = activated;
-  }
-
-  public String getActivationKey() {
-    return activationKey;
-  }
-
-  public void setActivationKey(String activationKey) {
-    this.activationKey = activationKey;
-  }
-
-  public String getResetKey() {
-    return resetKey;
-  }
-
-  public void setResetKey(String resetKey) {
-    this.resetKey = resetKey;
-  }
-
-  public Instant getResetDate() {
-    return resetDate;
-  }
-
-  public void setResetDate(Instant resetDate) {
-    this.resetDate = resetDate;
-  }
-
-  public String getLangKey() {
-    return langKey;
-  }
-
-  public void setLangKey(String langKey) {
-    this.langKey = langKey;
-  }
-
-  public Set<Authority> getAuthorities() {
-    return authorities;
-  }
-
-  public void setAuthorities(Set<Authority> authorities) {
-    this.authorities = authorities;
-  }
-
-  public Set<FeatureFlag> getFeatureFlags() {
-    return featureFlags;
-  }
-
-  public void setFeatureFlags(Set<FeatureFlag> featureFlags) {
-    this.featureFlags = featureFlags;
-  }
-
-  public UserRegistrationType getRegistrationType() {
-    return registrationType;
-  }
-
-  public void setRegistrationType(UserRegistrationType registrationType) {
-    this.registrationType = registrationType;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof User)) {
-      return false;
-    }
-    return id != null && id.equals(((User) o).id);
-  }
-
-  @Override
-  public int hashCode() {
-    // see
-    // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-    return getClass().hashCode();
   }
 }

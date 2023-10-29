@@ -110,6 +110,9 @@ public class CacheConfiguration {
 
       createCache(cm, "users_authorities", jcacheConfiguration);
 
+      createCache(cm, com.konstde00.todo_app.domain.File.class.getName(), jcacheConfiguration);
+      createCache(cm, "files", jcacheConfiguration);
+
       createCache(cm, TASK_CACHE_NAME, jcacheConfiguration);
       createCache(cm, TASKS_CACHE_NAME, jcacheConfiguration);
     };

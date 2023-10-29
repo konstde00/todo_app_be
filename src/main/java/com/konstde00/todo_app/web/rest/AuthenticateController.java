@@ -18,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.web.bind.annotation.*;
 
 /** Controller to authenticate users. */
@@ -28,11 +27,15 @@ public class AuthenticateController {
 
   private final Logger log = LoggerFactory.getLogger(AuthenticateController.class);
 
+  private final UserMapper userMapper;
   private final UserService userService;
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
   public AuthenticateController(
-      UserService userService, AuthenticationManagerBuilder authenticationManagerBuilder) {
+      UserMapper userMapper,
+      UserService userService,
+      AuthenticationManagerBuilder authenticationManagerBuilder) {
+    this.userMapper = userMapper;
     this.userService = userService;
     this.authenticationManagerBuilder = authenticationManagerBuilder;
   }
@@ -43,11 +46,11 @@ public class AuthenticateController {
 
     User user =
         userService
-            .getUserWithAuthoritiesByLogin(loginVM.getUsername())
+            .getUserWithAuthoritiesByEmail(loginVM.getEmail())
             .orElseThrow(() -> new ForbiddenException("User not found"));
 
     UsernamePasswordAuthenticationToken authenticationToken =
-        new UsernamePasswordAuthenticationToken(loginVM.getUsername(), loginVM.getPassword());
+        new UsernamePasswordAuthenticationToken(loginVM.getEmail(), loginVM.getPassword());
 
     Authentication authentication =
         authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -56,7 +59,7 @@ public class AuthenticateController {
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.setBearerAuth(jwt);
 
-    UserProfileDto userProfileDto = UserMapper.INSTANCE.toUserProfileDto(user);
+    UserProfileDto userProfileDto = userMapper.toUserProfileDto(user);
     userProfileDto.setToken(jwt);
     return new ResponseEntity<>(userProfileDto, httpHeaders, HttpStatus.OK);
   }

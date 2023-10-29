@@ -22,11 +22,17 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
     org.springframework.boot: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+    org.hibernate.orm.jdbc.bind: trace
+    org.org.hibernate.type: trace
     org: DEBUG
 
 spring:
   jpa:
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
   security:
     oauth2:
@@ -94,8 +100,8 @@ aws:
   secret-key: ${AWS_SECRET_KEY:test}
   region: us-east-1
   sqs:
-    email-verification-queue: ${SQS_EMAIL_VERIFICATION_QUEUE:todo-app-email-verification-queue}
-    password-reset-queue: ${SQS_PASSWORD_RESET_QUEUE:todo-app-password-reset-queue}
+    email-verification-queue: ${SQS_EMAIL_VERIFICATION_QUEUE:https://sqs.us-east-1.amazonaws.com/553440882962/test-queue}
+    password-reset-queue: ${SQS_PASSWORD_RESET_QUEUE:https://sqs.us-east-1.amazonaws.com/553440882962/test-queue}
   s3:
     bucket: ${BUCKET_NAME:todo-app-user-attachments}
     endpoint: s3.us-east-1.amazonaws.com

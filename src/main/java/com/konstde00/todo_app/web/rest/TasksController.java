@@ -54,19 +54,19 @@ public class TasksController implements TasksApi {
   }
 
   @Override
-  public ResponseEntity<Void> deleteTask(Long taskId) {
-
-    taskService.deleteTask(taskId);
-
-    return ResponseEntity.ok().build();
-  }
-
-  @Override
   public ResponseEntity<UpdateTaskResponseDto> updateTask(
       Long taskId, UpdateTaskRequestDto updateTaskRequestDto) {
 
     UpdateTaskResponseDto updatedTask = taskService.updateTask(taskId, updateTaskRequestDto);
 
     return ResponseEntity.ok(updatedTask);
+  }
+
+  @Override
+  public ResponseEntity<Void> deleteTask(Long taskId) {
+
+    taskService.deleteTask(taskId);
+
+    return ResponseEntity.ok().build();
   }
 }
