@@ -150,8 +150,8 @@ public class SecurityConfiguration {
     config.setAllowedOrigins(
         ImmutableList.of(
             "http://localhost:4200",
-            "http://staging-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com:80",
-            "http://prod-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com:80"));
+            "http://staging-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com",
+            "http://prod-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com"));
     config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
