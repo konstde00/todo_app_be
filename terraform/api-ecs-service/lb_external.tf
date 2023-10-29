@@ -1,6 +1,6 @@
 resource "random_integer" "load_balancer_ext_random_id_suffix" {
-  max = 1000
-  min = 1
+  max = 9999
+  min = 1000
   keepers = {
     subnets = join(",", var.vpc_external_subnet_ids)
     name    = coalesce(var.ext_load_balancer_name, "${var.environment_name}-${substr(var.service_name, 0, 15)}")
@@ -86,29 +86,29 @@ resource "aws_lb_listener" "ext_lb_to_tg" {
     target_group_arn = aws_lb_target_group.ext_target_group["default"].arn
   }
 
-  depends_on = [
-    aws_lb_listener.ext_lb_to_tg_https,
-  ]
+#  depends_on = [
+#    aws_lb_listener.ext_lb_to_tg_https,
+#  ]
 }
 
-resource "aws_lb_listener" "ext_lb_to_tg_https" {
-  for_each = toset(var.provide_external_lb ? ["default"] : [])
-
-  load_balancer_arn = aws_lb.ext_load_balancer["default"].arn
-  port              = 443
-  protocol          = "HTTP"
-#  protocol          = "HTTPS"
-#  certificate_arn   = var.certificate_arn
-#  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-
-  tags = local.ecr_service_tags
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.ext_target_group["default"].arn
-  }
-
-  depends_on = [
-    aws_lb_target_group.ext_target_group,
-  ]
-}
+#resource "aws_lb_listener" "ext_lb_to_tg_https" {
+#  for_each = toset(var.provide_external_lb ? ["default"] : [])
+#
+#  load_balancer_arn = aws_lb.ext_load_balancer["default"].arn
+#  port              = 443
+#  protocol          = "HTTP"
+##  protocol          = "HTTPS"
+##  certificate_arn   = var.certificate_arn
+##  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+#
+#  tags = local.ecr_service_tags
+#
+#  default_action {
+#    type             = "forward"
+#    target_group_arn = aws_lb_target_group.ext_target_group["default"].arn
+#  }
+#
+#  depends_on = [
+#    aws_lb_target_group.ext_target_group,
+#  ]
+#}

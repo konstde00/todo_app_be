@@ -20,6 +20,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -64,10 +65,8 @@ public class SecurityConfiguration {
   public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc)
       throws Exception {
 
-    log.info("SecurityConfiguration.filterChain() invoked");
-
-    http.cors(withDefaults())
-        .csrf(csrf -> csrf.disable())
+    http.cors(AbstractHttpConfigurer::disable)
+        .csrf(AbstractHttpConfigurer::disable)
         .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
         .headers(
             headers ->
