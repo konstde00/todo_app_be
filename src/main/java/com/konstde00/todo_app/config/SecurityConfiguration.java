@@ -31,8 +31,6 @@ import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -71,6 +69,7 @@ public class SecurityConfiguration {
 
     http.csrf(AbstractHttpConfigurer::disable)
         .cors()
+        .configurationSource(corsConfigurationSource())
         .and()
         .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
         .headers(
@@ -131,11 +130,11 @@ public class SecurityConfiguration {
                     .hasAuthority(AuthoritiesConstants.ADMIN))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(
-            exceptions ->
-                exceptions
-                    .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                    .accessDeniedHandler(new BearerTokenAccessDeniedHandler()))
+        //        .exceptionHandling(
+        //            exceptions ->
+        //                exceptions
+        //                    .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+        //                    .accessDeniedHandler(new BearerTokenAccessDeniedHandler()))
         .oauth2Login(withDefaults())
         .oauth2ResourceServer(
             oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
@@ -148,7 +147,11 @@ public class SecurityConfiguration {
     org.springframework.web.cors.UrlBasedCorsConfigurationSource source =
         new UrlBasedCorsConfigurationSource();
     CorsConfiguration config = jHipsterProperties.getCors();
-    config.setAllowedOrigins(ImmutableList.of("*"));
+    config.setAllowedOrigins(
+        ImmutableList.of(
+            "http://localhost:4200",
+            "http://staging-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com:80",
+            "http://prod-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com:80"));
     config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
@@ -156,7 +159,8 @@ public class SecurityConfiguration {
     config.setAllowCredentials(true);
     // setAllowedHeaders is important! Without it, OPTIONS preflight request
     // will fail with 403 Invalid CORS request
-    config.setAllowedHeaders(ImmutableList.of("Cache-Control", "Content-Type"));
+    config.setAllowedHeaders(
+        ImmutableList.of("Cache-Control", "Content-Type", "authorization", "Authorization"));
     source.registerCorsConfiguration("/**", config);
     return source;
   }

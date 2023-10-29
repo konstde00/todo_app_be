@@ -1,10 +1,13 @@
 package com.konstde00.todo_app.config;
 
 import java.io.IOException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends OncePerRequestFilter {
 
   @Override
@@ -14,11 +17,10 @@ public class CorsFilter extends OncePerRequestFilter {
       jakarta.servlet.FilterChain filterChain)
       throws jakarta.servlet.ServletException, IOException {
 
-    response.addHeader("Access-Control-Allow-Origin", "*");
     response.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, HEAD");
     response.addHeader(
         "Access-Control-Allow-Headers",
-        "Origin, Accept, X-Requested-With, Content-Type, Authorization, Access-Control-Request-Method, Access-Control-Request-Headers");
+        "Origin, Accept, X-Requested-With, Content-Type, Authorization, authorization, Access-Control-Request-Method, Access-Control-Request-Headers");
     response.addHeader(
         "Access-Control-Expose-Headers",
         "Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
