@@ -26,6 +26,10 @@ variable "api_java_heap_mb" {
 
 variable "spring_profile" {}
 
+variable "certificate_arn" {
+  description = "The ARN of the certificate to use for HTTPS"
+}
+
 variable "apigw_authorizer_id" {}
 
 variable "apigw_service_name" {}

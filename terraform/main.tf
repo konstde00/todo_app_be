@@ -47,11 +47,13 @@ module "todo_app_api_service" {
   ]
 
   provide_external_lb = true
+  certificate_arn     = var.certificate_arn
+
   external_lb_security_group_ids = [
     aws_security_group.api_sg.id
   ]
 
-  cluster_id = aws_ecs_cluster.todo_app_be_cluster.id
+  cluster_id                        = aws_ecs_cluster.todo_app_be_cluster.id
   container_port                    = 8080
   service_name                      = "todo-app-api"
   ecr_repository_url                = data.aws_ecr_repository.todo_app_be.repository_url
@@ -62,18 +64,18 @@ module "todo_app_api_service" {
   health_check_timeout              = 25
 
   environment_variables = [
-    { name : "JAVA_OPTS", value: ""},
-    { name : "MYSQL_URL", value: "jdbc:mysql://${aws_rds_cluster.todo_app_db_cluster.endpoint}/todo_app_db" },
-    { name : "MYSQL_USER", value: data.aws_secretsmanager_secret_version.rds_db_user_latest_version.secret_string },
-    { name : "MYSQL_PASSWORD", value: data.aws_secretsmanager_secret_version.rds_db_password_latest_version.secret_string },
+    { name : "JAVA_OPTS", value : "" },
+    { name : "MYSQL_URL", value : "jdbc:mysql://${aws_rds_cluster.todo_app_db_cluster.endpoint}/todo_app_db" },
+    { name : "MYSQL_USER", value : data.aws_secretsmanager_secret_version.rds_db_user_latest_version.secret_string },
+    { name : "MYSQL_PASSWORD", value : data.aws_secretsmanager_secret_version.rds_db_password_latest_version.secret_string },
     { name : "S3_BUCKET_NAME", value : aws_s3_bucket.todo_app_user_attachments.bucket },
     { name : "REDIS_SERVER", value : "redis://${module.redis.endpoint}:6379" },
     { name : "EMAIL_VERIFICATION_QUEUE", value : module.email-verification-sqs.queue-id },
     { name : "PASSWORD_RESET_QUEUE", value : module.password-reset-sqs.queue-id }
   ]
 
-  task_role_arn = aws_iam_role.todo-app-api-role.arn
-  execution_role = aws_iam_role.todo-app-api-execution-role.arn
+  task_role_arn           = aws_iam_role.todo-app-api-role.arn
+  execution_role          = aws_iam_role.todo-app-api-execution-role.arn
   vpc_external_subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id]
   vpc_internal_subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id]
 }

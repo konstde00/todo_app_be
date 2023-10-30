@@ -1,10 +1,10 @@
 module "this" {
-  source  = "cloudposse/label/null"
+  source = "cloudposse/label/null"
   # Cloud Posse recommends pinning every module to a specific version
   # version = "x.x.x"
-  namespace  = "var-namespace"
-  stage      = "var-stage"
-  name       = "var-name"
+  namespace = "var-namespace"
+  stage     = "var-stage"
+  name      = "var-name"
 }
 
 module "redis" {
@@ -26,7 +26,7 @@ module "redis" {
   transit_encryption_enabled    = false
   replication_group_id          = "todo-app-redis"
   elasticache_subnet_group_name = aws_elasticache_subnet_group.cache_subnet_group.name
-  parameter_group_description = "Parameter group for the todo-app-redis cluster"
+  parameter_group_description   = "Parameter group for the todo-app-redis cluster"
 
   use_existing_security_groups = true
   associated_security_group_ids = [

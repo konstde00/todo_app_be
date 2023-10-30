@@ -144,23 +144,20 @@ public class SecurityConfiguration {
 
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
-    org.springframework.web.cors.UrlBasedCorsConfigurationSource source =
-        new UrlBasedCorsConfigurationSource();
-    CorsConfiguration config = jHipsterProperties.getCors();
-    config.setAllowedOrigins(
+    final CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOriginPatterns(ImmutableList.of("*"));
+    configuration.setAllowedMethods(
+        ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+    configuration.setAllowedHeaders(ImmutableList.of("*"));
+    configuration.setExposedHeaders(
         ImmutableList.of(
-            "http://localhost:4200",
-            //staging
-            "https://dj86f71zrkyqw.cloudfront.net",
-            //prod
-            "https://dogt4tt86h30y.cloudfront.net"));
-    config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
-
-    config.setAllowCredentials(true);
-
-    config.setAllowedHeaders(
-        ImmutableList.of("Cache-Control", "Content-Type", "authorization", "Authorization"));
-    source.registerCorsConfiguration("/**", config);
+            "X-Auth-Token",
+            "Authorization",
+            "authorization",
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials"));
+    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
     return source;
   }
 
