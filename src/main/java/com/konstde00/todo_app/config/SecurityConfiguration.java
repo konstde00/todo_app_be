@@ -150,7 +150,7 @@ public class SecurityConfiguration {
     config.setAllowedOrigins(
         ImmutableList.of(
             "http://localhost:4200",
-            "https://dj86f71zrkyqw.cloudfront.net/",
+            "https://dj86f71zrkyqw.cloudfront.net",
             "https://dogt4tt86h30y.cloudfront.net"));
     config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
 
