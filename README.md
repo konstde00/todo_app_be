@@ -1,274 +1,94 @@
-# TodoAppBe
-
-This application was generated using JHipster 8.0.0-beta.3, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3](https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3).
-
-## Project Structure
-
-Node is required for generation and recommended for development. `package.json` is always generated for a better development experience with prettier, commit hooks, scripts and so on.
-
-In the project root, JHipster generates configuration files for tools like git, prettier, eslint, husky, and others that are well known and you can find references in the web.
-
-`/src/*` structure follows default Java structure.
-
-- `.yo-rc.json` - Yeoman configuration file
-  JHipster configuration is stored in this file at `generator-jhipster` key. You may find `generator-jhipster-*` for specific blueprints configuration.
-- `.yo-resolve` (optional) - Yeoman conflict resolver
-  Allows to use a specific action when conflicts are found skipping prompts for files that matches a pattern. Each line should match `[pattern] [action]` with pattern been a [Minimatch](https://github.com/isaacs/minimatch#minimatch) pattern and action been one of skip (default if ommited) or force. Lines starting with `#` are considered comments and are ignored.
-- `.jhipster/*.json` - JHipster entity configuration files
-
-- `npmw` - wrapper to use locally installed npm.
-  JHipster installs Node and npm locally using the build tool by default. This wrapper makes sure npm is installed locally and uses it avoiding some differences different versions can cause. By using `./npmw` instead of the traditional `npm` you can configure a Node-less environment to develop or test your application.
-- `/src/main/docker` - Docker configurations for the application and services that the application depends on
-
-## Development
-
-Before you can build this project, you must install and configure the following dependencies on your machine:
-
-1. [Node.js][]: We use Node to run a development web server and build the project.
-   Depending on your system, you can install Node either from source or as a pre-packaged bundle.
-
-After installing Node, you should be able to run the following command to install development tools.
-You will only need to run this command when dependencies change in [package.json](package.json).
-
-```
-npm install
-```
-
-We use npm scripts and [Angular CLI][] with [Webpack][] as our build system.
-
-If you are using redis as a cache, you will have to launch a cache server.
-To start your cache server, run:
-
-```
-docker compose -f src/main/docker/redis.yml up -d
-```
-
-The cache can also be turned off by adding to the application yaml:
-
-```
-spring:
-    cache:
-        type: none
-```
-
-See [here](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html#boot-features-caching-provider-none) for details.
-
-**WARNING**: If you using second level hibernate cache and disabling the spring cache, you have to disable the second level hibernate cache as well since they are using
-the same CacheManager.
-
-Run the following commands in two separate terminals to create a blissful development experience where your browser
-auto-refreshes when files change on your hard drive.
-
-Npm is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
-specifying a newer version in [package.json](package.json). You can also run `npm update` and `npm install` to manage dependencies.
-Add the `help` flag on any command to see how you can use it. For example, `npm help update`.
-
-The `npm run` command will list all of the scripts available to run for this project.
-
-### Managing dependencies
-
-For example, to add [Leaflet][] library as a runtime dependency of your application, you would run following command:
-
-```
-npm install --save --save-exact leaflet
-```
-
-To benefit from TypeScript type definitions from [DefinitelyTyped][] repository in development, you would run following command:
-
-```
-npm install --save-dev --save-exact @types/leaflet
-```
-
-Then you would import the JS and CSS files specified in library's installation instructions so that [Webpack][] knows about them:
-Edit [src/main/webapp/app/app.module.ts](src/main/webapp/app/app.module.ts) file:
-
-```
-import 'leaflet/dist/leaflet.js';
-```
-
-Edit [src/main/webapp/content/scss/vendor.scss](src/main/webapp/content/scss/vendor.scss) file:
-
-```
-@import 'leaflet/dist/leaflet.css';
-```
-
-Note: There are still a few other things remaining to do for Leaflet that we won't detail here.
-
-For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
-
-### Using Angular CLI
-
-You can also use [Angular CLI][] to generate some custom client code.
-
-For example, the following command:
-
-```
-ng generate component my-component
-```
-
-will generate few files:
-
-```
-create src/main/webapp/app/my-component/my-component.component.html
-create src/main/webapp/app/my-component/my-component.component.ts
-update src/main/webapp/app/app.module.ts
-```
-
-### JHipster Control Center
-
-JHipster Control Center can help you manage and control your application(s). You can start a local control center server (accessible on http://localhost:7419) with:
-
-```
-docker compose -f src/main/docker/jhipster-control-center.yml up
-```
-
-### Doing API-First development using openapi-generator-cli
-
-[OpenAPI-Generator]() is configured for this application. You can generate API code from the `src/main/resources/swagger/api.yml` definition file by running:
-
-```bash
-./gradlew openApiGenerate
-```
-
-Then implements the generated delegate classes with `@Service` classes.
-
-To edit the `api.yml` definition file, you can use a tool such as [Swagger-Editor](). Start a local instance of the swagger-editor using docker by running: `docker compose -f src/main/docker/swagger-editor.yml up -d`. The editor will then be reachable at [http://localhost:7742](http://localhost:7742).
-
-Refer to [Doing API-First development][] for more details.
-
-## Building for production
-
-### Packaging as jar
-
-To build the final jar and optimize the TodoAppBe application for production, run:
-
-```
-./gradlew -Pprod clean bootJar
-```
-
-This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
-To ensure everything worked, run:
-
-```
-java -jar build/libs/*.jar
-```
-
-Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
-
-Refer to [Using JHipster in production][] for more details.
-
-### Packaging as war
-
-To package your application as a war in order to deploy it to an application server, run:
-
-```
-./gradlew -Pprod -Pwar clean bootWar
-```
-
-## Testing
-
-To launch your application's tests, run:
-
-```
-./gradlew test integrationTest jacocoTestReport
-```
-
-### Client tests
-
-Unit tests are run by [Jest][]. They're located in [src/test/javascript/](src/test/javascript/) and can be run with:
-
-```
-npm test
-```
-
-For more information, refer to the [Running tests page][].
-
-### Code quality
-
-Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
-
-```
-docker compose -f src/main/docker/sonar.yml up -d
-```
-
-Note: we have turned off forced authentication redirect for UI in [src/main/docker/sonar.yml](src/main/docker/sonar.yml) for out of the box experience while trying out SonarQube, for real use cases turn it back on.
-
-You can run a Sonar analysis with using the [sonar-scanner](https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner) or by using the gradle plugin.
-
-Then, run a Sonar analysis:
-
-```
-./gradlew -Pprod clean check jacocoTestReport sonarqube -Dsonar.login=admin -Dsonar.password=admin
-```
-
-Additionally, Instead of passing `sonar.password` and `sonar.login` as CLI arguments, these parameters can be configured from [sonar-project.properties](sonar-project.properties) as shown below:
-
-```
-sonar.login=admin
-sonar.password=admin
-```
-
-For more information, refer to the [Code quality page][].
-
-## Using Docker to simplify development (optional)
-
-You can use Docker to improve your JHipster development experience. A number of docker-compose configuration are available in the [src/main/docker](src/main/docker) folder to launch required third party services.
-
-For example, to start a mysql database in a docker container, run:
-
-```
-docker compose -f src/main/docker/mysql.yml up -d
-```
-
-To stop it and remove the container, run:
-
-```
-docker compose -f src/main/docker/mysql.yml down
-```
-
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a docker image of your app by running:
-
-```
-npm run java:docker
-```
-
-Or build a arm64 docker image when using an arm64 processor os like MacOS with M1 processor family running:
-
-```
-npm run java:docker:arm64
-```
-
-Then run:
-
-```
-docker compose -f src/main/docker/app.yml up -d
-```
-
-When running Docker Desktop on MacOS Big Sur or later, consider enabling experimental `Use the new Virtualization framework` for better processing performance ([disk access performance is worse](https://github.com/docker/roadmap/issues/7)).
-
-For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the docker-compose sub-generator (`jhipster docker-compose`), which is able to generate docker configurations for one or several JHipster applications.
-
-## Continuous Integration (optional)
-
-To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
-
-[JHipster Homepage and latest documentation]: https://www.jhipster.tech
-[JHipster 8.0.0-beta.3 archive]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3
-[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/development/
-[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/docker-compose
-[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/production/
-[Running tests page]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/running-tests/
-[Code quality page]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/code-quality/
-[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/setting-up-ci/
-[Node.js]: https://nodejs.org/
-[NPM]: https://www.npmjs.com/
-[Webpack]: https://webpack.github.io/
-[BrowserSync]: https://www.browsersync.io/
-[Jest]: https://facebook.github.io/jest/
-[Leaflet]: https://leafletjs.com/
-[DefinitelyTyped]: https://definitelytyped.org/
-[Angular CLI]: https://cli.angular.io/
-[OpenAPI-Generator]: https://openapi-generator.tech
-[Swagger-Editor]: https://editor.swagger.io
-[Doing API-First development]: https://www.jhipster.tech/documentation-archive/v8.0.0-beta.3/doing-api-first-development/
+# Project Tasks Overview
+
+This README provides an overview of the tasks completed within the current project, along with brief descriptions for each task code.
+
+## Task List
+
+### C1 (MVC)
+- The task involved the implementation or refinement of the Model-View-Controller (MVC) architectural pattern, segregating the application into distinct components for data, user interface, and user interactions.
+- Entities:
+  - [User](src/main/java/com/konstde00/todo_app/domain/User.java)
+  - [Authority](src/main/java/com/konstde00/todo_app/domain/Authority.java)
+  - [Task](src/main/java/com/konstde00/todo_app/domain/Task.java)
+  - [File](src/main/java/com/konstde00/todo_app/domain/File.java)
+
+### C2 (Cloud)
+- Deployed the application to AWS cloud platform.
+- AWS services used:
+  - Amazon Elastic Container Registry (ECR)
+  - Amazon Elastic Container Service (ECS)
+  - Amazon Relational Database Service (RDS)
+  - Amazon Simple Storage Service (S3)
+  - Amazon Simple Queue Service (SQS)
+  - Amazon ElastiCache
+  - Amazon SecretsManager
+  - Amazon CloudWatch
+  - Amazon Route 53
+  - Amazon Certificate Manager (ACM)
+  - Amazon Virtual Private Cloud (VPC)
+  - Amazon Elastic Load Balancing (ELB)
+  - Amazon Identity and Access Management (IAM)
+- Diagram of the cloud architecture is available [here](https://lucid.app/lucidchart/c3ecb718-9d48-46b7-b372-a2fc661790a3/edit?viewport_loc=-666%2C225%2C4669%2C2683%2C0_0&invitationId=inv_552b9e78-90b1-4cd1-9962-25ddcb94b8b8)
+
+![Cloud Architecture](Architecture-diagram.jpg)
+
+- Management of cloud resources was done using Terraform. 
+  - Configuration files are available [here](terraform)
+  - For storing state and performing operations for configuration management Terraform Enhanced backend (Terraform Cloud) was used.
+
+### C3 (CI/CD)
+- Created a CI/CD workflows using CircleCI. 
+- CircleCI configuration file is available [here](.circleci/config.yml)
+
+### C4 (Containerisation)
+- Containerised the application using Docker and JIB Gradle plugin, allowing for easy deployment and scaling of the application.
+- Gradle function for building a Docker image is available [here](gradle/docker.gradle)
+- Command to build a Docker image
+  - locally: `./gradlew jibDockerBuild`
+  - remotely: `gradle jib`
+- After build, image is automatically pushed to ECR repository: `553440882962.dkr.ecr.us-east-1.amazonaws.com/todo_app_be`
+
+### C5 (REST-api)
+- Implementation of a REST API, allowing for communication between the application and external systems.
+- API-first approach was used for designing the API, controllers and DTOs were generated using [OpenApi generator](https://openapi-generator.tech/) based on [api.yaml](swagger/api.yml).
+
+### C12 (2do-list)
+- Implementation of a to-do list feature within the application, enabling users to manage tasks or activities.
+
+### C16 (OAuth2)
+- Implementation of OAuth 2.0 (with Google IDP) for user authentication and authorization, allowing secure access to resources without direct password sharing.
+
+### C19 (Static content)
+- Used AWS S3 to manage user profile pictures
+- API endpoint for uploading a profile picture: 
+`PATCH /api/users/v1/profile/picture`
+
+### B1 (Pagination API)
+- Implemented a pagination API. 
+- Example of API endpoints where pagination is enabled:
+  - `GET /api/tasks/v1`
+  - `GET /api/admin/v1/users`
+
+### B6 (Feature flags)
+- Implementation of feature flags, allowing for the dynamic enabling or disabling of application features.
+- Currently, feature flags are used for enabling/disabling the analytics list feature 
+
+### B7 (Serverless)
+- AWS Fargate is used for running the application in a serverless manner.
+- Terraform module: [api-fargate-service](terraform/api-fargate-service)
+- Service configuration: [todo_app_api_service](terraform/main.tf?plain=1)
+
+### B8 (Asynchronous process)
+- In this project it is used for asynchronous processing of password-reset requests, in [PasswordResetProducer](com/konstde00/todo_app/service/password_reset/PasswordResetProducer.java) 
+    and [PasswordResetConsumer](com/konstde00/todo_app/service/password_reset/PasswordResetConsumer.java)
+- Technologies used:
+  - Amazon Simple Queue Service (SQS)
+  - `io.awspring.cloud.sqs` library
+
+### B9 (API caching)
+- Technologies used:
+  - ElastiCache (with Redis engine)
+  - `org.springframework.cache` module
+- Example of API endpoints where caching is enabled:
+  - `GET /api/tasks/{taskId}`
+  - `GET /api/users/{userId}`

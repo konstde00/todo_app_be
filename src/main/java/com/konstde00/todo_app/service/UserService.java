@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +74,8 @@ public class UserService {
   @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds-for-remember-me:0}")
   private long tokenValidityInSecondsForRememberMe;
 
+  public static final String USER_PROFILE_BY_ID_CACHE_NAME = "userProfileById";
+
   public UserService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
@@ -94,17 +97,7 @@ public class UserService {
     this.userMapper = userMapper;
   }
 
-  public User getById(String id) {
-
-    if (id == null) {
-      throw new BadRequestException("User ID is null");
-    }
-
-    return userRepository
-        .findById(id)
-        .orElseThrow(() -> new BadRequestException("Not found a user with id " + id));
-  }
-
+  @Cacheable(cacheNames = USER_PROFILE_BY_ID_CACHE_NAME, key = "#id", unless = "#result == null")
   public UserProfileDto getProfileById(String id) {
 
     return userRepository

@@ -77,7 +77,7 @@ public class UserController {
     this.userRepository = userRepository;
   }
 
-  @GetMapping("/admin/users")
+  @GetMapping("/admin/v1/users")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
   public ResponseEntity<PaginatedUsersResponseDto> getAllUsers(
       @RequestParam(name = "search", required = false, defaultValue = StringUtils.EMPTY)
@@ -91,11 +91,11 @@ public class UserController {
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
-  @GetMapping("/admin/users/{id}")
+  @GetMapping("/users/{userId}")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-  public ResponseEntity<UserProfileDto> getUserById(@PathVariable String id) {
+  public ResponseEntity<UserProfileDto> getUserById(@PathVariable String userId) {
 
-    UserProfileDto profile = userService.getProfileById(id);
+    UserProfileDto profile = userService.getProfileById(userId);
 
     return new ResponseEntity<>(profile, HttpStatus.OK);
   }
@@ -187,7 +187,7 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("users/v1/upload")
+  @PostMapping("users/v1/profile/picture")
   @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.USER + "\")")
   public ResponseEntity<UploadFileResponseDto> uploadAvatar(
       @RequestParam("photo") MultipartFile photo) {

@@ -2,6 +2,7 @@ package com.konstde00.todo_app.config;
 
 import static com.konstde00.todo_app.service.TaskService.TASKS_CACHE_NAME;
 import static com.konstde00.todo_app.service.TaskService.TASK_CACHE_NAME;
+import static com.konstde00.todo_app.service.UserService.USER_PROFILE_BY_ID_CACHE_NAME;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
@@ -115,6 +116,8 @@ public class CacheConfiguration {
 
       createCache(cm, TASK_CACHE_NAME, jcacheConfiguration);
       createCache(cm, TASKS_CACHE_NAME, jcacheConfiguration);
+
+      createCache(cm, USER_PROFILE_BY_ID_CACHE_NAME, jcacheConfiguration);
     };
   }
 
