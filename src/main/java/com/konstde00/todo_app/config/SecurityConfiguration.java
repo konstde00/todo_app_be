@@ -150,15 +150,12 @@ public class SecurityConfiguration {
     config.setAllowedOrigins(
         ImmutableList.of(
             "http://localhost:4200",
-            "http://staging-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com",
-            "http://prod-todo-app-website-hosting.s3-website-us-east-1.amazonaws.com"));
+            "https://dj86f71zrkyqw.cloudfront.net/",
+            "https://dogt4tt86h30y.cloudfront.net"));
     config.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
-    // setAllowCredentials(true) is important, otherwise:
-    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
-    // wildcard '*' when the request's credentials mode is 'include'.
+
     config.setAllowCredentials(true);
-    // setAllowedHeaders is important! Without it, OPTIONS preflight request
-    // will fail with 403 Invalid CORS request
+
     config.setAllowedHeaders(
         ImmutableList.of("Cache-Control", "Content-Type", "authorization", "Authorization"));
     source.registerCorsConfiguration("/**", config);
