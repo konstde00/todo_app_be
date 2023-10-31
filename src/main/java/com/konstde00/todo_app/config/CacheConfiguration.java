@@ -4,6 +4,7 @@ import static com.konstde00.todo_app.service.TaskService.TASKS_CACHE_NAME;
 import static com.konstde00.todo_app.service.TaskService.TASK_CACHE_NAME;
 import static com.konstde00.todo_app.service.UserService.USER_PROFILE_BY_ID_CACHE_NAME;
 
+import com.konstde00.todo_app.repository.rds.UserRepository;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import javax.cache.configuration.MutableConfiguration;
@@ -93,14 +94,8 @@ public class CacheConfiguration {
   public JCacheManagerCustomizer cacheManagerCustomizer(
       javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration) {
     return cm -> {
-      createCache(
-          cm,
-          com.konstde00.todo_app.repository.UserRepository.USERS_BY_LOGIN_CACHE,
-          jcacheConfiguration);
-      createCache(
-          cm,
-          com.konstde00.todo_app.repository.UserRepository.USERS_BY_EMAIL_CACHE,
-          jcacheConfiguration);
+      createCache(cm, UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
+      createCache(cm, UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
       createCache(cm, com.konstde00.todo_app.domain.User.class.getName(), jcacheConfiguration);
       createCache(
           cm,

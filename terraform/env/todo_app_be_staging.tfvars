@@ -15,4 +15,4 @@ api_cpu          = 256
 api_memory       = 2048
 api_java_heap_mb = 1500
 
-certificate_arn = "arn:aws:acm:us-east-1:553440882962:certificate/484c78d9-5a0d-4145-9731-8ddfe7f0816f"
+certificate_arn = "arn:aws:acm:us-east-1:553440882962:certificate/e70c1719-e64f-4df7-9ec3-46856aa38d1a"

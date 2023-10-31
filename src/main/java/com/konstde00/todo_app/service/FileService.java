@@ -10,7 +10,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.konstde00.todo_app.domain.File;
 import com.konstde00.todo_app.domain.User;
 import com.konstde00.todo_app.domain.enums.ProfileImageOrigin;
-import com.konstde00.todo_app.repository.FileRepository;
+import com.konstde00.todo_app.repository.rds.FileRepository;
 import java.net.URL;
 import java.util.Map;
 import java.util.Optional;

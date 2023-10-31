@@ -243,7 +243,6 @@ dependencies {
 
     implementation "io.awspring.cloud:spring-cloud-aws-starter:$springCloudAws"
     implementation "io.awspring.cloud:spring-cloud-aws-sqs:$springCloudAws"
-//    implementation "io.awspring.cloud:spring-cloud-aws-starter-s3:$springCloudAws"
     implementation "io.awspring.cloud:spring-cloud-aws-messaging:$springCloudAwsMessaging"
     implementation "software.amazon.awssdk:aws-sdk-java:$awsSdkVersion"
     implementation "software.amazon.awssdk:sqs:$awsSdkVersion"

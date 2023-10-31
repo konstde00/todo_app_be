@@ -5,7 +5,7 @@ import static org.mockito.Mockito.when;
 
 import com.konstde00.todo_app.IntegrationTest;
 import com.konstde00.todo_app.domain.User;
-import com.konstde00.todo_app.repository.UserRepository;
+import com.konstde00.todo_app.repository.rds.UserRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;

@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.konstde00.todo_app.IntegrationTest;
 import com.konstde00.todo_app.domain.User;
-import com.konstde00.todo_app.repository.UserRepository;
+import com.konstde00.todo_app.repository.rds.UserRepository;
 import com.konstde00.todo_app.security.AuthoritiesConstants;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;

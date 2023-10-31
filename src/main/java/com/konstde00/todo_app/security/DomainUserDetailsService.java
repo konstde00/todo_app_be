@@ -2,7 +2,7 @@ package com.konstde00.todo_app.security;
 
 import com.konstde00.todo_app.domain.Authority;
 import com.konstde00.todo_app.domain.User;
-import com.konstde00.todo_app.repository.UserRepository;
+import com.konstde00.todo_app.repository.rds.UserRepository;
 import java.util.*;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.slf4j.Logger;

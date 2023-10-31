@@ -4,7 +4,7 @@ import com.konstde00.todo_app.domain.Task;
 import com.konstde00.todo_app.domain.User;
 import com.konstde00.todo_app.domain.enums.Priority;
 import com.konstde00.todo_app.domain.enums.Status;
-import com.konstde00.todo_app.repository.TaskRepository;
+import com.konstde00.todo_app.repository.rds.TaskRepository;
 import com.konstde00.todo_app.service.api.dto.*;
 import com.konstde00.todo_app.service.exception.ForbiddenException;
 import com.konstde00.todo_app.service.mapper.TaskMapper;

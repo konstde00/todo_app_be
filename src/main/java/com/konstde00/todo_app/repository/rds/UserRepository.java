@@ -1,4 +1,4 @@
-package com.konstde00.todo_app.repository;
+package com.konstde00.todo_app.repository.rds;
 
 import com.konstde00.todo_app.domain.User;
 import java.time.Instant;

@@ -1,7 +1,7 @@
 package com.konstde00.todo_app.service;
 
 import com.konstde00.todo_app.domain.User;
-import com.konstde00.todo_app.repository.TaskRepository;
+import com.konstde00.todo_app.repository.rds.TaskRepository;
 import com.konstde00.todo_app.service.api.dto.*;
 import java.util.List;
 import java.util.stream.Collectors;

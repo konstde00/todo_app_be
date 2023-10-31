@@ -29,7 +29,7 @@ resource "aws_ecs_cluster" "todo_app_be_cluster" {
 
 module "todo_app_api_service" {
 
-  source        = "api-fargate-service"
+  source        = "./api-fargate-service"
   desired_count = var.api_desired_count
   java_opts     = "-XX:+UseSerialGC -Dspring.profiles.active=${var.spring_profile}"
 

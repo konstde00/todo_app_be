@@ -9,6 +9,8 @@ resource "aws_rds_cluster" "todo_app_db_cluster" {
   vpc_security_group_ids  = [aws_security_group.aurora_sg.id]
   preferred_backup_window = "07:00-09:00"
 
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.rds_parameter_group.name
+
   serverlessv2_scaling_configuration {
     max_capacity = 1.0
     min_capacity = 0.5
@@ -24,6 +26,10 @@ resource "aws_rds_cluster" "todo_app_db_cluster" {
     update = "2h"
     delete = "1h"
   }
+
+  depends_on = [
+    aws_rds_cluster_parameter_group.rds_parameter_group
+  ]
 }
 
 resource "aws_rds_cluster_instance" "todo_app_db_instance" {
@@ -36,6 +42,29 @@ resource "aws_rds_cluster_instance" "todo_app_db_instance" {
     create = "1h"
     update = "2h"
     delete = "1h"
+  }
+}
+
+resource "aws_rds_cluster_parameter_group" "rds_parameter_group" {
+  name   = "rds-parameter-group"
+  family = "aurora-mysql8.0"
+
+    parameter {
+        name  = "binlog_format"
+        value = "ROW"
+      apply_method = "pending-reboot"
+    }
+
+  parameter {
+    name  = "binlog_checksum"
+    value = "none"
+    apply_method = "pending-reboot"
+  }
+
+  parameter {
+    name  = "binlog_row_image"
+    value = "full"
+    apply_method = "pending-reboot"
   }
 }
 

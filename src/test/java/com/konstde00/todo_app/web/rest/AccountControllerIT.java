@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.konstde00.todo_app.IntegrationTest;
 import com.konstde00.todo_app.config.Constants;
 import com.konstde00.todo_app.domain.User;
-import com.konstde00.todo_app.repository.AuthorityRepository;
-import com.konstde00.todo_app.repository.UserRepository;
+import com.konstde00.todo_app.repository.rds.AuthorityRepository;
+import com.konstde00.todo_app.repository.rds.UserRepository;
 import com.konstde00.todo_app.security.AuthoritiesConstants;
 import com.konstde00.todo_app.service.UserService;
 import com.konstde00.todo_app.service.dto.PasswordChangeDTO;
