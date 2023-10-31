@@ -13,6 +13,7 @@ paths:
   /api/tasks/v1:
     get:
       parameters:
+        - $ref: '#/components/parameters/TaskSearchParam'
         - $ref: '#/components/parameters/pageParam'
         - $ref: '#/components/parameters/PageSizeParam'
         - $ref: '#/components/parameters/TaskStatusEnum'
@@ -135,6 +136,7 @@ paths:
 components:
 
   parameters:
+
     pageParam:
       in: query
       name: pageNumber
@@ -183,6 +185,16 @@ components:
       allowEmptyValue: false
       schema:
         $ref: '#/components/schemas/TaskStatusEnum'
+
+    TaskSearchParam:
+      name: search
+      in: query
+      required: false
+      description: Search query
+      deprecated: false
+      allowEmptyValue: false
+      schema:
+        type: string
 
   schemas:
 

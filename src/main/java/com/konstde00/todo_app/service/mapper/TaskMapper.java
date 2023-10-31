@@ -1,6 +1,7 @@
 package com.konstde00.todo_app.service.mapper;
 
 import com.konstde00.todo_app.domain.Task;
+import com.konstde00.todo_app.domain.opensearch.TaskDocument;
 import com.konstde00.todo_app.service.api.dto.*;
 import java.util.List;
 import org.mapstruct.Mapper;
@@ -20,7 +21,7 @@ public abstract class TaskMapper {
 
   public abstract Task toEntity(CreateTaskRequestDto createTaskRequestDto);
 
-  public abstract List<TaskItem> toTaskItems(List<Task> tasks);
+  public abstract List<TaskItem> toTaskItems(List<TaskDocument> tasks);
 
   @Mapping(
       target = "status",

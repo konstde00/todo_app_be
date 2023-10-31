@@ -142,11 +142,11 @@ spring:
     jpa:
       repositories:
         bootstrap-mode: deferred
-#    elasticsearch:
-#      repositories:
-#        enabled: true
-#      cluster-name: elasticsearch
-#      cluster-nodes: localhost:9300
+    elasticsearch:
+      repositories:
+        enabled: true
+      cluster-name: elasticsearch
+      cluster-nodes: localhost:9200
   jpa:
     open-in-view: false
     properties:

@@ -4,6 +4,8 @@ import com.konstde00.todo_app.domain.Task;
 import com.konstde00.todo_app.domain.User;
 import com.konstde00.todo_app.domain.enums.Priority;
 import com.konstde00.todo_app.domain.enums.Status;
+import com.konstde00.todo_app.domain.opensearch.TaskDocument;
+import com.konstde00.todo_app.repository.opensearch.ElasticsearchTaskRepository;
 import com.konstde00.todo_app.repository.rds.TaskRepository;
 import com.konstde00.todo_app.service.api.dto.*;
 import com.konstde00.todo_app.service.exception.ForbiddenException;
@@ -31,6 +33,7 @@ public class TaskService {
 
   UserService userService;
   TaskRepository taskRepository;
+  ElasticsearchTaskRepository elasticsearchTaskRepository;
 
   public static final String TASK_CACHE_NAME = "task";
   public static final String TASKS_CACHE_NAME = "tasks";
@@ -48,13 +51,17 @@ public class TaskService {
   }
 
   public GetTasksResponseDto getTasks(
-      User currentUser, Integer pageNumber, Integer pageSize, TaskStatusEnum status) {
+      String search,
+      User currentUser,
+      Integer pageNumber,
+      Integer pageSize,
+      TaskStatusEnum status) {
 
     PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
-    Page<Task> tasksPage =
-        taskRepository.findAllByCreatedBy(
-            currentUser.getId(), Status.valueOf(status.toString()), pageRequest);
+    Page<TaskDocument> tasksPage =
+        elasticsearchTaskRepository.getByTitleAndUserId(
+            search, currentUser.getId(), status.toString(), pageRequest);
 
     List<TaskItem> items = TaskMapper.INSTANCE.toTaskItems(tasksPage.getContent());
 

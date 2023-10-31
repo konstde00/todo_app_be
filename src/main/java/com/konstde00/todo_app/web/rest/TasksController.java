@@ -30,11 +30,12 @@ public class TasksController implements TasksApi {
 
   @Override
   public ResponseEntity<GetTasksResponseDto> getTasks(
-      TaskStatusEnum status, Integer pageNumber, Integer pageSize) {
+      TaskStatusEnum status, String search, Integer pageNumber, Integer pageSize) {
 
     User currentUser = userService.getCurrentUserWithAuthorities();
 
-    GetTasksResponseDto tasks = taskService.getTasks(currentUser, pageNumber, pageSize, status);
+    GetTasksResponseDto tasks =
+        taskService.getTasks(search, currentUser, pageNumber, pageSize, status);
 
     return ResponseEntity.ok(tasks);
   }
@@ -68,8 +69,8 @@ public class TasksController implements TasksApi {
   }
 
   @PostMapping("/api/tasks/v1/upload")
-  public ResponseEntity<String> uploadFileToGoogleDrive(@RequestParam Long taskId,
-                                                        @RequestParam MultipartFile file) {
+  public ResponseEntity<String> uploadFileToGoogleDrive(
+      @RequestParam Long taskId, @RequestParam MultipartFile file) {
 
     return ResponseEntity.ok(googleDriveService.uploadFile(taskId, file));
   }

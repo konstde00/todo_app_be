@@ -9,7 +9,6 @@ services:
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:9200:9200
-      - 127.0.0.1:9300:9300
     environment:
       - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
       - 'discovery.type=single-node'
