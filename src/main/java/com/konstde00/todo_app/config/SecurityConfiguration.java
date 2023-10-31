@@ -189,14 +189,27 @@ public class SecurityConfiguration {
             clientRegistrationRepository.findByRegistrationId("oidc"),
             restTemplateBuilder.build()));
 
+    NimbusJwtDecoder msalDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
+
+    OAuth2TokenValidator<Jwt> msalAudienceValidator =
+        new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
+    OAuth2TokenValidator<Jwt> msalIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+    OAuth2TokenValidator<Jwt> msalAudience =
+        new DelegatingOAuth2TokenValidator<>(msalIssuer, msalAudienceValidator);
+    msalDecoder.setJwtValidator(msalAudience);
+    msalDecoder.setClaimSetConverter(
+        new CustomClaimConverter(
+            clientRegistrationRepository.findByRegistrationId("msal"),
+            restTemplateBuilder.build()));
+
     return token -> {
       try {
         return oidcDecoder.decode(token);
       } catch (Exception e) {
         try {
-          return jwtDecoder.decode(token);
+          return msalDecoder.decode(token);
         } catch (Exception e2) {
-          throw e;
+          return jwtDecoder.decode(token);
         }
       }
     };

@@ -456,6 +456,21 @@ public class UserService {
     Map<String, Object> attributes = jwtDecoder.decode(token).getClaims();
 
     User user = getUser(attributes);
+    user.setRegistrationType(UserRegistrationType.GOOGLE);
+    user.setFeatureFlags(Objects.requireNonNullElse(user.getFeatureFlags(), Set.of()));
+    if (user.getAuthorities() == null) {
+      user.setAuthorities(Set.of(new Authority(AuthoritiesConstants.USER)));
+    }
+
+    saveAndFlush(user);
+  }
+
+  @Transactional
+  public void syncWithMsal(String token) {
+    Map<String, Object> attributes = jwtDecoder.decode(token).getClaims();
+
+    User user = getUser(attributes);
+    user.setRegistrationType(UserRegistrationType.MSAL);
     user.setFeatureFlags(Objects.requireNonNullElse(user.getFeatureFlags(), Set.of()));
     if (user.getAuthorities() == null) {
       user.setAuthorities(Set.of(new Authority(AuthoritiesConstants.USER)));

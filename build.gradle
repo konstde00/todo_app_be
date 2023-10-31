@@ -241,6 +241,8 @@ dependencies {
 
     implementation 'javax.persistence:javax.persistence-api:2.2'
 
+    implementation 'com.azure.spring:azure-spring-boot-starter-active-directory:3.11.0'
+
     implementation "io.awspring.cloud:spring-cloud-aws-starter:$springCloudAws"
     implementation "io.awspring.cloud:spring-cloud-aws-sqs:$springCloudAws"
     implementation "io.awspring.cloud:spring-cloud-aws-messaging:$springCloudAwsMessaging"

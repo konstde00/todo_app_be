@@ -76,9 +76,15 @@ public class AuthenticateController {
     return request.getRemoteUser();
   }
 
-  @PatchMapping("/users/sync-with-idp")
+  @PatchMapping("/users/sync-with-idp/google")
   public ResponseEntity<?> syncWithIdp(@RequestParam String token) {
     userService.syncWithIdp(token);
+    return new ResponseEntity<>(HttpStatus.ACCEPTED);
+  }
+
+  @PatchMapping("/users/sync-with-idp/msal")
+  public ResponseEntity<?> syncWithMsal(@RequestParam String token) {
+    userService.syncWithMsal(token);
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
 
